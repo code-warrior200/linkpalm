@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Alert,
   ScrollView,
   Platform,
   Image,
@@ -16,6 +15,7 @@ import { useAuthStore } from '../stores/authStore';
 import { useNavigation } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { SellerTabParamList } from '../types';
+import { useAlert, alertHelpers } from '../contexts/AlertContext';
 import Button from '../components/Button';
 
 type SellerProfileScreenNavigationProp = BottomTabNavigationProp<SellerTabParamList, 'SellerProfile'>;
@@ -34,20 +34,18 @@ export default function SellerProfileScreen(): React.ReactElement {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<SellerProfileScreenNavigationProp>();
   const [profileImage, setProfileImage] = useState<string | null>(null);
+  const { showAlert } = useAlert();
 
   const handleLogout = (): void => {
-    Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
-      [
+    showAlert({
+      type: 'confirm',
+      title: 'Logout',
+      message: 'Are you sure you want to logout?',
+      buttons: [
         { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Logout',
-          style: 'destructive',
-          onPress: logout,
-        },
-      ]
-    );
+        { text: 'Logout', style: 'destructive', onPress: logout },
+      ],
+    });
   };
 
   const getInitials = (name: string): string => {
@@ -67,11 +65,10 @@ export default function SellerProfileScreen(): React.ReactElement {
     if (Platform.OS !== 'web') {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert(
+        showAlert(alertHelpers.warning(
           'Permission Required',
-          'Sorry, we need camera roll permissions to upload your profile picture!',
-          [{ text: 'OK' }]
-        );
+          'Sorry, we need camera roll permissions to upload your profile picture!'
+        ));
         return false;
       }
     }
@@ -82,11 +79,10 @@ export default function SellerProfileScreen(): React.ReactElement {
     if (Platform.OS !== 'web') {
       const { status } = await ImagePicker.requestCameraPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert(
+        showAlert(alertHelpers.warning(
           'Permission Required',
-          'Sorry, we need camera permissions to take photos!',
-          [{ text: 'OK' }]
-        );
+          'Sorry, we need camera permissions to take photos!'
+        ));
         return false;
       }
     }
@@ -94,10 +90,11 @@ export default function SellerProfileScreen(): React.ReactElement {
   };
 
   const handleImagePicker = async (): Promise<void> => {
-    Alert.alert(
-      'Select Profile Picture',
-      'Choose an option',
-      [
+    showAlert({
+      type: 'info',
+      title: 'Select Profile Picture',
+      message: 'Choose an option',
+      buttons: [
         {
           text: 'Camera',
           onPress: async () => {
@@ -105,7 +102,8 @@ export default function SellerProfileScreen(): React.ReactElement {
             if (!hasPermission) return;
 
             const result = await ImagePicker.launchCameraAsync({
-              mediaTypes: ImagePicker.MediaTypeOptions.Images,
+              // @ts-ignore - Using new mediaType API (replaces deprecated mediaTypes)
+              mediaType: ImagePicker.MediaTypeOptions.Images,
               allowsEditing: true,
               aspect: [1, 1],
               quality: 0.8,
@@ -123,7 +121,8 @@ export default function SellerProfileScreen(): React.ReactElement {
             if (!hasPermission) return;
 
             const result = await ImagePicker.launchImageLibraryAsync({
-              mediaTypes: ImagePicker.MediaTypeOptions.Images,
+              // @ts-ignore - Using new mediaType API (replaces deprecated mediaTypes)
+              mediaType: ImagePicker.MediaTypeOptions.Images,
               allowsEditing: true,
               aspect: [1, 1],
               quality: 0.8,
@@ -134,33 +133,162 @@ export default function SellerProfileScreen(): React.ReactElement {
             }
           },
         },
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
+        { text: 'Cancel', style: 'cancel' },
       ],
-      { cancelable: true }
-    );
+    });
   };
 
   const handleRemoveImage = (): void => {
-    Alert.alert(
+    showAlert(alertHelpers.delete(
       'Remove Profile Picture',
       'Are you sure you want to remove your profile picture?',
-      [
+      () => setProfileImage(null)
+    ));
+  };
+
+  const handleEditProfile = (): void => {
+    showAlert({
+      type: 'info',
+      title: 'Edit Profile',
+      message: 'Update your seller profile information',
+      buttons: [
         {
-          text: 'Cancel',
-          style: 'cancel',
+          text: 'Edit Business Name',
+          onPress: () => showAlert(alertHelpers.info('Edit Business Name', `Current: ${user?.name}\n\nEnter new business name in the form`)),
         },
         {
-          text: 'Remove',
-          style: 'destructive',
-          onPress: () => {
-            setProfileImage(null);
-          },
+          text: 'Edit Email',
+          onPress: () => showAlert(alertHelpers.info('Edit Email', `Current: ${user?.email}\n\nEnter new email address`)),
         },
-      ]
-    );
+        {
+          text: 'Edit Phone',
+          onPress: () => showAlert(alertHelpers.info('Edit Phone', 'Update your contact phone number')),
+        },
+        { text: 'Cancel', style: 'cancel' },
+      ],
+    });
+  };
+
+  const handleBusinessInfo = (): void => {
+    showAlert({
+      type: 'info',
+      title: 'Business Information',
+      message: 'Company Name: ' + (user?.name || 'N/A') + '\nLocation: Lagos, Nigeria\nBusiness Type: Palm Oil Supplier',
+      buttons: [
+        {
+          text: 'Edit',
+          onPress: () => showAlert(alertHelpers.info('Edit', 'Edit functionality will open a form to update business details')),
+        },
+        { text: 'OK' },
+      ],
+    });
+  };
+
+  const handlePaymentSettings = (): void => {
+    showAlert({
+      type: 'info',
+      title: 'Payment Settings',
+      message: 'Configure your payment methods and bank account details for receiving payments.',
+      buttons: [
+        {
+          text: 'Add Bank Account',
+          onPress: () => showAlert(alertHelpers.info('Add Bank Account', 'Form to add bank account details will open here')),
+        },
+        {
+          text: 'View Accounts',
+          onPress: () => showAlert(alertHelpers.info('Bank Accounts', 'No bank accounts added yet')),
+        },
+        { text: 'Cancel', style: 'cancel' },
+      ],
+    });
+  };
+
+  const handleShippingOptions = (): void => {
+    showAlert({
+      type: 'info',
+      title: 'Shipping Options',
+      message: 'Set your shipping preferences and delivery areas.',
+      buttons: [
+        {
+          text: 'Delivery Areas',
+          onPress: () => showAlert(alertHelpers.info('Delivery Areas', 'Lagos, Abuja, Port Harcourt\n\nTap Edit to modify')),
+        },
+        {
+          text: 'Shipping Rates',
+          onPress: () => showAlert(alertHelpers.info('Shipping Rates', 'Standard: ₦10\nExpress: ₦25\n\nTap Edit to modify')),
+        },
+        { text: 'Cancel', style: 'cancel' },
+      ],
+    });
+  };
+
+  const handleNotifications = (): void => {
+    showAlert({
+      type: 'info',
+      title: 'Notification Settings',
+      message: 'Choose what notifications you want to receive.',
+      buttons: [
+        {
+          text: 'Order Updates',
+          onPress: () => showAlert(alertHelpers.info('Order Updates', 'Currently: ON\n\nGet notified about new orders and status changes')),
+        },
+        {
+          text: 'Messages',
+          onPress: () => showAlert(alertHelpers.info('Messages', 'Currently: ON\n\nGet notified about new messages from buyers')),
+        },
+        {
+          text: 'Reviews',
+          onPress: () => showAlert(alertHelpers.info('Reviews', 'Currently: ON\n\nGet notified about new product reviews')),
+        },
+        { text: 'Cancel', style: 'cancel' },
+      ],
+    });
+  };
+
+  const handlePrivacySecurity = (): void => {
+    showAlert({
+      type: 'info',
+      title: 'Privacy & Security',
+      message: 'Manage your account security and privacy settings.',
+      buttons: [
+        {
+          text: 'Change Password',
+          onPress: () => showAlert(alertHelpers.info('Change Password', 'Password change form will open here')),
+        },
+        {
+          text: 'Two-Factor Auth',
+          onPress: () => showAlert(alertHelpers.info('Two-Factor Authentication', 'Currently: OFF\n\nEnable 2FA for extra security')),
+        },
+        {
+          text: 'Privacy Policy',
+          onPress: () => showAlert(alertHelpers.info('Privacy Policy', 'View our privacy policy and data handling practices')),
+        },
+        { text: 'Cancel', style: 'cancel' },
+      ],
+    });
+  };
+
+  const handleHelpSupport = (): void => {
+    showAlert({
+      type: 'info',
+      title: 'Help & Support',
+      message: 'Get help with using LinkPalm',
+      buttons: [
+        {
+          text: 'Contact Support',
+          onPress: () => showAlert(alertHelpers.info('Contact Support', 'Email: support@linkpalm.com\nPhone: +234 XXX XXX XXXX\n\nSupport hours: 9AM - 5PM WAT')),
+        },
+        {
+          text: 'FAQs',
+          onPress: () => showAlert(alertHelpers.info('FAQs', 'Common questions:\n\n1. How do I add a listing?\n2. How do payments work?\n3. Shipping guidelines\n\n...and more')),
+        },
+        {
+          text: 'Report Issue',
+          onPress: () => showAlert(alertHelpers.info('Report Issue', 'Describe your issue and we\'ll get back to you within 24 hours')),
+        },
+        { text: 'Cancel', style: 'cancel' },
+      ],
+    });
   };
 
   const menuItems: MenuItem[] = [
@@ -169,42 +297,42 @@ export default function SellerProfileScreen(): React.ReactElement {
       title: 'Business Information',
       icon: 'business-outline',
       iconColor: '#2196f3',
-      onPress: () => Alert.alert('Business Information', 'Business information settings'),
+      onPress: handleBusinessInfo,
     },
     {
       id: '2',
       title: 'Payment Settings',
       icon: 'card-outline',
       iconColor: '#4caf50',
-      onPress: () => Alert.alert('Payment Settings', 'Payment settings'),
+      onPress: handlePaymentSettings,
     },
     {
       id: '3',
       title: 'Shipping Options',
       icon: 'car-outline',
       iconColor: '#ff9800',
-      onPress: () => Alert.alert('Shipping Options', 'Shipping options'),
+      onPress: handleShippingOptions,
     },
     {
       id: '4',
       title: 'Notifications',
       icon: 'notifications-outline',
       iconColor: '#e27a14',
-      onPress: () => Alert.alert('Notifications', 'Notification settings'),
+      onPress: handleNotifications,
     },
     {
       id: '5',
       title: 'Privacy & Security',
       icon: 'lock-closed-outline',
       iconColor: '#9c27b0',
-      onPress: () => Alert.alert('Privacy & Security', 'Privacy and security settings'),
+      onPress: handlePrivacySecurity,
     },
     {
       id: '6',
       title: 'Help & Support',
       icon: 'help-circle-outline',
       iconColor: '#607d8b',
-      onPress: () => Alert.alert('Help & Support', 'Get help and support'),
+      onPress: handleHelpSupport,
     },
   ];
 
@@ -221,7 +349,7 @@ export default function SellerProfileScreen(): React.ReactElement {
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.editButton}
-          onPress={() => Alert.alert('Edit Profile', 'Edit profile functionality')}
+          onPress={handleEditProfile}
           activeOpacity={0.7}
         >
           <Ionicons name="create-outline" size={20} color="#e27a14" />
@@ -277,7 +405,7 @@ export default function SellerProfileScreen(): React.ReactElement {
               <View style={[styles.statIconContainer, { backgroundColor: '#f1f8f4' }]}>
                 <Ionicons name="cash-outline" size={24} color="#4caf50" />
               </View>
-              <Text style={styles.statValue}>$12,450</Text>
+              <Text style={styles.statValue}>₦12,450</Text>
               <Text style={styles.statLabel}>Total Sales</Text>
             </View>
             <View style={styles.statCard}>

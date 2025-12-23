@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView, Platform, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -7,6 +7,7 @@ import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { BuyerTabParamList } from '../types';
 import { useAuthStore } from '../stores/authStore';
 import { useNavigation } from '@react-navigation/native';
+import { useAlert, alertHelpers } from '../contexts/AlertContext';
 import Button from '../components/Button';
 
 type BuyerProfileScreenNavigationProp = BottomTabNavigationProp<BuyerTabParamList, 'BuyerProfile'>;
@@ -17,20 +18,18 @@ export default function BuyerProfileScreen(): React.ReactElement {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<BuyerProfileScreenNavigationProp>();
   const [profileImage, setProfileImage] = useState<string | null>(null);
+  const { showAlert } = useAlert();
 
   const handleLogout = (): void => {
-    Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
-      [
+    showAlert({
+      type: 'confirm',
+      title: 'Logout',
+      message: 'Are you sure you want to logout?',
+      buttons: [
         { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Logout',
-          style: 'destructive',
-          onPress: logout,
-        },
-      ]
-    );
+        { text: 'Logout', style: 'destructive', onPress: logout },
+      ],
+    });
   };
 
   const getInitials = (name: string): string => {
@@ -50,11 +49,10 @@ export default function BuyerProfileScreen(): React.ReactElement {
     if (Platform.OS !== 'web') {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert(
+        showAlert(alertHelpers.warning(
           'Permission Required',
-          'Sorry, we need camera roll permissions to upload your profile picture!',
-          [{ text: 'OK' }]
-        );
+          'Sorry, we need camera roll permissions to upload your profile picture!'
+        ));
         return false;
       }
     }
@@ -65,15 +63,17 @@ export default function BuyerProfileScreen(): React.ReactElement {
     const hasPermission = await requestImagePickerPermissions();
     if (!hasPermission) return;
 
-    Alert.alert(
-      'Select Profile Picture',
-      'Choose an option',
-      [
+    showAlert({
+      type: 'info',
+      title: 'Select Profile Picture',
+      message: 'Choose an option',
+      buttons: [
         {
           text: 'Camera',
           onPress: async () => {
             const result = await ImagePicker.launchCameraAsync({
-              mediaTypes: ImagePicker.MediaTypeOptions.Images,
+              // @ts-ignore - Using new mediaType API (replaces deprecated mediaTypes)
+              mediaType: ImagePicker.MediaTypeOptions.Images,
               allowsEditing: true,
               aspect: [1, 1],
               quality: 0.8,
@@ -88,7 +88,8 @@ export default function BuyerProfileScreen(): React.ReactElement {
           text: 'Photo Library',
           onPress: async () => {
             const result = await ImagePicker.launchImageLibraryAsync({
-              mediaTypes: ImagePicker.MediaTypeOptions.Images,
+              // @ts-ignore - Using new mediaType API (replaces deprecated mediaTypes)
+              mediaType: ImagePicker.MediaTypeOptions.Images,
               allowsEditing: true,
               aspect: [1, 1],
               quality: 0.8,
@@ -99,33 +100,143 @@ export default function BuyerProfileScreen(): React.ReactElement {
             }
           },
         },
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
+        { text: 'Cancel', style: 'cancel' },
       ],
-      { cancelable: true }
-    );
+    });
   };
 
   const handleRemoveImage = (): void => {
-    Alert.alert(
+    showAlert(alertHelpers.delete(
       'Remove Profile Picture',
       'Are you sure you want to remove your profile picture?',
-      [
+      () => setProfileImage(null)
+    ));
+  };
+
+  const handlePaymentMethods = (): void => {
+    showAlert({
+      type: 'info',
+      title: 'Payment Methods',
+      message: 'Manage your payment cards and methods.',
+      buttons: [
         {
-          text: 'Cancel',
-          style: 'cancel',
+          text: 'Add Card',
+          onPress: () => showAlert(alertHelpers.info('Add Payment Card', 'Card form will open here\n\nSupported: Visa, Mastercard, Verve')),
         },
         {
-          text: 'Remove',
-          style: 'destructive',
-          onPress: () => {
-            setProfileImage(null);
-          },
+          text: 'View Cards',
+          onPress: () => showAlert(alertHelpers.info('Saved Cards', 'No payment cards saved yet\n\nAdd a card for faster checkout')),
         },
-      ]
-    );
+        { text: 'Cancel', style: 'cancel' },
+      ],
+    });
+  };
+
+  const handleShippingAddresses = (): void => {
+    showAlert({
+      type: 'info',
+      title: 'Shipping Addresses',
+      message: 'Manage your delivery addresses.',
+      buttons: [
+        {
+          text: 'Add Address',
+          onPress: () => showAlert(alertHelpers.info('Add Address', 'Address form will open here\n\nFill in your delivery details')),
+        },
+        {
+          text: 'View Addresses',
+          onPress: () => showAlert(alertHelpers.info('Saved Addresses', 'No addresses saved yet\n\nAdd an address for faster ordering')),
+        },
+        { text: 'Cancel', style: 'cancel' },
+      ],
+    });
+  };
+
+  const handleNotifications = (): void => {
+    showAlert({
+      type: 'info',
+      title: 'Notification Preferences',
+      message: 'Choose what notifications you want to receive.',
+      buttons: [
+        {
+          text: 'Order Updates',
+          onPress: () => showAlert(alertHelpers.info('Order Updates', 'Currently: ON\n\nGet notified about order status changes')),
+        },
+        {
+          text: 'New Messages',
+          onPress: () => showAlert(alertHelpers.info('Messages', 'Currently: ON\n\nGet notified about new messages from sellers')),
+        },
+        {
+          text: 'Promotions',
+          onPress: () => showAlert(alertHelpers.info('Promotions', 'Currently: ON\n\nReceive deals and special offers')),
+        },
+        { text: 'Cancel', style: 'cancel' },
+      ],
+    });
+  };
+
+  const handleHelpSupport = (): void => {
+    showAlert({
+      type: 'info',
+      title: 'Help & Support',
+      message: 'Get help with your LinkPalm account',
+      buttons: [
+        {
+          text: 'Contact Support',
+          onPress: () => showAlert(alertHelpers.info('Contact Support', 'Email: support@linkpalm.com\nPhone: +234 XXX XXX XXXX\n\nSupport hours: 9AM - 5PM WAT')),
+        },
+        {
+          text: 'FAQs',
+          onPress: () => showAlert(alertHelpers.info('FAQs', 'Common questions:\n\n1. How do I place an order?\n2. Payment methods\n3. Delivery information\n\n...and more')),
+        },
+        {
+          text: 'Live Chat',
+          onPress: () => showAlert(alertHelpers.info('Live Chat', 'Chat with support representative\n\nAvailable: Mon-Fri 9AM-5PM WAT')),
+        },
+        { text: 'Cancel', style: 'cancel' },
+      ],
+    });
+  };
+
+  const handleTermsPrivacy = (): void => {
+    showAlert({
+      type: 'info',
+      title: 'Terms & Privacy',
+      message: 'Review our legal documents',
+      buttons: [
+        {
+          text: 'Terms of Service',
+          onPress: () => showAlert(alertHelpers.info('Terms of Service', 'View full terms and conditions of using LinkPalm')),
+        },
+        {
+          text: 'Privacy Policy',
+          onPress: () => showAlert(alertHelpers.info('Privacy Policy', 'Learn how we protect and use your data')),
+        },
+        {
+          text: 'Cookie Policy',
+          onPress: () => showAlert(alertHelpers.info('Cookie Policy', 'Information about our use of cookies')),
+        },
+        { text: 'Cancel', style: 'cancel' },
+      ],
+    });
+  };
+
+  const handleAbout = (): void => {
+    showAlert({
+      type: 'info',
+      title: 'About LinkPalm',
+      message: 'Version: 1.0.0 (MVP)\nBuild: 2024.12.001\n\nLinkPalm connects palm oil buyers and sellers across Nigeria.\n\n© 2024 LinkPalm. All rights reserved.',
+      buttons: [
+        {
+          text: 'Check for Updates',
+          onPress: () => showAlert(alertHelpers.info('Updates', 'You are using the latest version')),
+        },
+        {
+          text: 'Rate App',
+          onPress: () => showAlert(alertHelpers.info('Rate LinkPalm', 'Please rate us on the App Store / Play Store')),
+        },
+        { text: 'OK' },
+      ],
+    });
   };
 
   return (
@@ -206,7 +317,7 @@ export default function BuyerProfileScreen(): React.ReactElement {
               <View style={[styles.statIconContainer, { backgroundColor: '#fff5eb' }]}>
                 <Ionicons name="cash-outline" size={24} color="#e27a14" />
               </View>
-              <Text style={styles.statValue}>$2,450</Text>
+              <Text style={styles.statValue}>₦2,450</Text>
               <Text style={styles.statLabel}>Total Spent</Text>
             </View>
           </View>
@@ -216,7 +327,7 @@ export default function BuyerProfileScreen(): React.ReactElement {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Account Settings</Text>
           <View style={styles.menuCard}>
-            <TouchableOpacity style={styles.menuItem} activeOpacity={0.7}>
+            <TouchableOpacity style={styles.menuItem} onPress={handlePaymentMethods} activeOpacity={0.7}>
               <View style={styles.menuItemLeft}>
                 <View style={[styles.menuIconContainer, { backgroundColor: '#e3f2fd' }]}>
                   <Ionicons name="card-outline" size={20} color="#2196f3" />
@@ -231,7 +342,7 @@ export default function BuyerProfileScreen(): React.ReactElement {
 
             <View style={styles.menuDivider} />
 
-            <TouchableOpacity style={styles.menuItem} activeOpacity={0.7}>
+            <TouchableOpacity style={styles.menuItem} onPress={handleShippingAddresses} activeOpacity={0.7}>
               <View style={styles.menuItemLeft}>
                 <View style={[styles.menuIconContainer, { backgroundColor: '#fff3e0' }]}>
                   <Ionicons name="location-outline" size={20} color="#ff9800" />
@@ -246,7 +357,7 @@ export default function BuyerProfileScreen(): React.ReactElement {
 
             <View style={styles.menuDivider} />
 
-            <TouchableOpacity style={styles.menuItem} activeOpacity={0.7}>
+            <TouchableOpacity style={styles.menuItem} onPress={handleNotifications} activeOpacity={0.7}>
               <View style={styles.menuItemLeft}>
                 <View style={[styles.menuIconContainer, { backgroundColor: '#e8f5e9' }]}>
                   <Ionicons name="notifications-outline" size={20} color="#4caf50" />
@@ -265,7 +376,7 @@ export default function BuyerProfileScreen(): React.ReactElement {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>More</Text>
           <View style={styles.menuCard}>
-            <TouchableOpacity style={styles.menuItem} activeOpacity={0.7}>
+            <TouchableOpacity style={styles.menuItem} onPress={handleHelpSupport} activeOpacity={0.7}>
               <View style={styles.menuItemLeft}>
                 <View style={[styles.menuIconContainer, { backgroundColor: '#f3e5f5' }]}>
                   <Ionicons name="help-circle-outline" size={20} color="#9c27b0" />
@@ -279,7 +390,7 @@ export default function BuyerProfileScreen(): React.ReactElement {
 
             <View style={styles.menuDivider} />
 
-            <TouchableOpacity style={styles.menuItem} activeOpacity={0.7}>
+            <TouchableOpacity style={styles.menuItem} onPress={handleTermsPrivacy} activeOpacity={0.7}>
               <View style={styles.menuItemLeft}>
                 <View style={[styles.menuIconContainer, { backgroundColor: '#e0f2f1' }]}>
                   <Ionicons name="document-text-outline" size={20} color="#009688" />
@@ -293,7 +404,7 @@ export default function BuyerProfileScreen(): React.ReactElement {
 
             <View style={styles.menuDivider} />
 
-            <TouchableOpacity style={styles.menuItem} activeOpacity={0.7}>
+            <TouchableOpacity style={styles.menuItem} onPress={handleAbout} activeOpacity={0.7}>
               <View style={styles.menuItemLeft}>
                 <View style={[styles.menuIconContainer, { backgroundColor: '#fff3e0' }]}>
                   <Ionicons name="information-circle-outline" size={20} color="#ff9800" />

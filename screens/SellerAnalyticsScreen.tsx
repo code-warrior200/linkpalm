@@ -45,7 +45,7 @@ export default function SellerAnalyticsScreen(): React.ReactElement {
     {
       id: '1',
       title: 'Total Sales',
-      value: '$12,450',
+      value: '₦12,450',
       subtext: 'This month',
       icon: 'cash-outline',
       iconColor: '#4caf50',
@@ -111,7 +111,7 @@ export default function SellerAnalyticsScreen(): React.ReactElement {
       id: '3',
       type: 'payment',
       title: 'Payment received',
-      description: '$450.00 from Order #1230',
+      description: '₦450.00 from Order #1230',
       time: '2 days ago',
       icon: 'cash-outline',
       iconColor: '#4caf50',
@@ -253,7 +253,7 @@ export default function SellerAnalyticsScreen(): React.ReactElement {
             <View style={styles.performanceRow}>
               <View style={styles.performanceItem}>
                 <Text style={styles.performanceLabel}>Avg. Order Value</Text>
-                <Text style={styles.performanceValue}>$518.75</Text>
+                <Text style={styles.performanceValue}>₦518.75</Text>
               </View>
               <View style={styles.performanceDivider} />
               <View style={styles.performanceItem}>

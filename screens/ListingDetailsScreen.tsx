@@ -1,14 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Alert,
   Image,
   Platform,
   Share,
+  FlatList,
+  Dimensions,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -16,6 +17,8 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import { BuyerStackParamList, SellerStackParamList } from '../types';
 import { useAuthStore } from '../stores/authStore';
+import { useFavoritesStore } from '../stores/favoritesStore';
+import { useAlert, alertHelpers } from '../contexts/AlertContext';
 import Button from '../components/Button';
 
 type ListingDetailsScreenNavigationProp =
@@ -35,8 +38,39 @@ export default function ListingDetailsScreen({ route, navigation }: ListingDetai
   const { listing } = route.params;
   const user = useAuthStore((state) => state.user);
   const insets = useSafeAreaInsets();
+  const { showAlert } = useAlert();
   const isBuyer = user?.role === 'buyer';
   const [quantity, setQuantity] = useState<number>(1);
+  const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
+  const flatListRef = useRef<FlatList>(null);
+  const screenWidth = Dimensions.get('window').width;
+  
+  const addFavorite = useFavoritesStore((state) => state.addFavorite);
+  const removeFavorite = useFavoritesStore((state) => state.removeFavorite);
+  const isFavorite = useFavoritesStore((state) => state.isFavorite);
+  const [isListingFavorite, setIsListingFavorite] = useState(isFavorite(listing.id));
+
+  const getAllImages = (): (string | number)[] => {
+    if (listing.images && listing.images.length > 0) {
+      return listing.images;
+    }
+    if (listing.image) {
+      return [listing.image];
+    }
+    return [];
+  };
+
+  const images = getAllImages();
+
+  // Default images from local assets when listing has no images
+  const defaultImages = [
+    require('../assets/images/oil1.jpg'),
+    require('../assets/images/palm2.jpg'),
+    require('../assets/images/palm3.jpg'),
+    require('../assets/images/palm4.jpg'),
+  ];
+
+  const displayImages = images.length > 0 ? images : defaultImages;
 
   const handleContactSeller = (): void => {
     if (isBuyer) {
@@ -50,27 +84,55 @@ export default function ListingDetailsScreen({ route, navigation }: ListingDetai
     if (isBuyer) {
       (navigation as unknown as NativeStackNavigationProp<BuyerStackParamList, 'SellerContact'>).navigate('SellerContact', {
         sellerName: listing.seller,
+        sellerId: listing.sellerId,
+      });
+    }
+  };
+
+  const handleRateSeller = (): void => {
+    if (isBuyer) {
+      (navigation as unknown as NativeStackNavigationProp<BuyerStackParamList, 'RateSeller'>).navigate('RateSeller', {
+        sellerName: listing.seller,
+        sellerId: listing.sellerId,
       });
     }
   };
 
   const handlePlaceOrder = (): void => {
-    Alert.alert('Place Order', `Order placed for ${quantity} ${listing.unit}(s)`);
+    if (isBuyer) {
+      (navigation as unknown as NativeStackNavigationProp<BuyerStackParamList, 'PlaceOrder'>).navigate('PlaceOrder', {
+        listing,
+        quantity,
+      });
+    }
+  };
+
+  const handleToggleFavorite = (): void => {
+    if (isListingFavorite) {
+      removeFavorite(listing.id);
+      setIsListingFavorite(false);
+      showAlert(alertHelpers.info('Removed', 'Listing removed from favorites'));
+    } else {
+      addFavorite(listing);
+      setIsListingFavorite(true);
+      showAlert(alertHelpers.success('Added', 'Listing added to favorites'));
+    }
   };
 
   const handleShare = async (): Promise<void> => {
     try {
       await Share.share({
-        message: `Check out this palm oil listing: ${listing.title} - $${listing.pricePerUnit}/${listing.unit}`,
+        message: `Check out this palm oil listing: ${listing.title} - ₦${listing.pricePerUnit}/${listing.unit}`,
         title: listing.title,
       });
     } catch (error) {
-      // Share cancelled or error
+      // Share was cancelled or an error occurred
     }
   };
 
   const handleEdit = (): void => {
-    Alert.alert('Edit Listing', 'Edit functionality would be implemented here.');
+    // TODO: Implement edit listing functionality
+    showAlert(alertHelpers.info('Edit Listing', 'Edit functionality will be implemented here.'));
   };
 
   const incrementQuantity = (): void => {
@@ -83,7 +145,6 @@ export default function ListingDetailsScreen({ route, navigation }: ListingDetai
     }
   };
 
-  // Determine size icon
   const unit = listing.unit.toLowerCase();
   let sizeIcon: keyof typeof Ionicons.glyphMap = 'cube-outline';
   if (unit.includes('5l') || unit.includes('10l')) {
@@ -102,15 +163,71 @@ export default function ListingDetailsScreen({ route, navigation }: ListingDetai
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        {/* Image Section */}
+        {/* Image Gallery Section */}
         <View style={styles.imageContainer}>
-          <View style={styles.imagePlaceholder}>
-            <Ionicons name={sizeIcon} size={64} color="#e27a14" />
-            <Text style={styles.imagePlaceholderText}>Palm Oil</Text>
+          {displayImages.length > 0 ? (
+            <>
+              <FlatList
+                ref={flatListRef}
+                data={displayImages}
+                horizontal
+                pagingEnabled
+                showsHorizontalScrollIndicator={false}
+                keyExtractor={(item, index) => `image-${index}`}
+                onMomentumScrollEnd={(event) => {
+                  const index = Math.round(event.nativeEvent.contentOffset.x / screenWidth);
+                  setCurrentImageIndex(index);
+                }}
+                renderItem={({ item }) => {
+                  const imageSource = typeof item === 'number' 
+                    ? item 
+                    : { uri: String(item) };
+                  return (
+                    <Image
+                      source={imageSource}
+                      style={styles.productImage}
+                      resizeMode="cover"
+                    />
+                  );
+                }}
+              />
+              {displayImages.length > 1 && (
+                <View style={styles.imageIndicators}>
+                  {displayImages.map((_, index) => (
+                    <View
+                      key={index}
+                      style={[
+                        styles.indicator,
+                        index === currentImageIndex && styles.indicatorActive,
+                      ]}
+                    />
+                  ))}
+                </View>
+              )}
+              {displayImages.length > 1 && (
+                <View style={styles.imageCounter}>
+                  <Text style={styles.imageCounterText}>
+                    {currentImageIndex + 1} / {displayImages.length}
+                  </Text>
+                </View>
+              )}
+            </>
+          ) : (
+            <View style={styles.imagePlaceholder}>
+              <Ionicons name={sizeIcon} size={64} color="#e27a14" />
+              <Text style={styles.imagePlaceholderText}>Palm Oil</Text>
+            </View>
+          )}
+          <View style={styles.actionButtons}>
+            {isBuyer && (
+              <TouchableOpacity style={styles.favoriteButton} onPress={handleToggleFavorite} activeOpacity={0.7}>
+                <Ionicons name={isListingFavorite ? 'heart' : 'heart-outline'} size={20} color={isListingFavorite ? '#e27a14' : '#333'} />
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity style={styles.shareButton} onPress={handleShare} activeOpacity={0.7}>
+              <Ionicons name="share-outline" size={20} color="#333" />
+            </TouchableOpacity>
           </View>
-          <TouchableOpacity style={styles.shareButton} onPress={handleShare} activeOpacity={0.7}>
-            <Ionicons name="share-outline" size={20} color="#333" />
-          </TouchableOpacity>
         </View>
 
         {/* Header Section */}
@@ -128,7 +245,7 @@ export default function ListingDetailsScreen({ route, navigation }: ListingDetai
           <Text style={styles.title}>{listing.title}</Text>
           <View style={styles.priceRow}>
             <View>
-              <Text style={styles.price}>${listing.pricePerUnit}</Text>
+              <Text style={styles.price}>₦{listing.pricePerUnit}</Text>
               <Text style={styles.priceUnit}>per {listing.unit}</Text>
             </View>
             <View style={styles.ratingContainer}>
@@ -159,7 +276,7 @@ export default function ListingDetailsScreen({ route, navigation }: ListingDetai
             </View>
             <View style={styles.totalPriceContainer}>
               <Text style={styles.totalPriceLabel}>Total:</Text>
-              <Text style={styles.totalPrice}>${totalPrice.toFixed(2)}</Text>
+              <Text style={styles.totalPrice}>₦{totalPrice.toFixed(2)}</Text>
             </View>
           </View>
         )}
@@ -181,10 +298,16 @@ export default function ListingDetailsScreen({ route, navigation }: ListingDetai
                 <Text style={styles.infoCardTitle}>Seller</Text>
               </View>
               <Text style={styles.infoCardValue}>{listing.seller}</Text>
-              <TouchableOpacity style={styles.viewProfileButton} onPress={handleViewProfile} activeOpacity={0.7}>
-                <Text style={styles.viewProfileText}>View Profile</Text>
-                <Ionicons name="chevron-forward" size={16} color="#e27a14" />
-              </TouchableOpacity>
+              <View style={styles.sellerActions}>
+                <TouchableOpacity style={styles.rateSellerButtonCompact} onPress={handleRateSeller} activeOpacity={0.7}>
+                  <Ionicons name="star-outline" size={16} color="#e27a14" />
+                  <Text style={styles.rateSellerTextCompact}>Rate Seller</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.viewProfileButton} onPress={handleViewProfile} activeOpacity={0.7}>
+                  <Text style={styles.viewProfileText}>View Profile</Text>
+                  <Ionicons name="chevron-forward" size={16} color="#e27a14" />
+                </TouchableOpacity>
+              </View>
             </View>
           )}
 
@@ -282,6 +405,44 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  productImage: {
+    width: Dimensions.get('window').width,
+    height: 280,
+  },
+  imageIndicators: {
+    position: 'absolute',
+    bottom: 16,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 8,
+  },
+  indicator: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+  },
+  indicatorActive: {
+    backgroundColor: '#fff',
+    width: 24,
+  },
+  imageCounter: {
+    position: 'absolute',
+    top: 16,
+    right: 60,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  imageCounterText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
+  },
   imagePlaceholder: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -292,10 +453,33 @@ const styles = StyleSheet.create({
     marginTop: 12,
     fontWeight: '600',
   },
-  shareButton: {
+  actionButtons: {
     position: 'absolute',
     top: 16,
     right: 16,
+    flexDirection: 'row',
+    gap: 8,
+  },
+  favoriteButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
+  },
+  shareButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
@@ -511,11 +695,33 @@ const styles = StyleSheet.create({
     color: '#1a1a1a',
     marginLeft: 28,
   },
+  sellerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 12,
+    marginLeft: 28,
+    gap: 12,
+  },
+  rateSellerButtonCompact: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: '#fff5eb',
+    borderWidth: 1,
+    borderColor: '#e27a14',
+  },
+  rateSellerTextCompact: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#e27a14',
+  },
   viewProfileButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 12,
-    marginLeft: 28,
   },
   viewProfileText: {
     fontSize: 14,

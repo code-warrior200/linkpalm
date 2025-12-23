@@ -8,12 +8,12 @@ import {
   RefreshControl,
   ScrollView,
   Platform,
-  Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { OrdersStackParamList, Order } from '../types';
+import { useAlert, alertHelpers } from '../contexts/AlertContext';
 import Button from '../components/Button';
 
 type BuyerOrdersScreenNavigationProp = NativeStackNavigationProp<OrdersStackParamList, 'Orders'>;
@@ -87,6 +87,7 @@ const STATUS_FILTERS: Array<{ id: OrderStatus; label: string; icon: keyof typeof
 
 export default function BuyerOrdersScreen({ navigation }: BuyerOrdersScreenProps): React.ReactElement {
   const insets = useSafeAreaInsets();
+  const { showAlert } = useAlert();
   const [selectedFilter, setSelectedFilter] = useState<OrderStatus>('all');
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [orders, setOrders] = useState<Order[]>(MOCK_ORDERS);
@@ -150,14 +151,12 @@ export default function BuyerOrdersScreen({ navigation }: BuyerOrdersScreenProps
   };
 
   const handleCancelOrder = (orderId: string, orderNumber: string): void => {
-    Alert.alert(
-      'Cancel Order',
-      `Are you sure you want to cancel order ${orderNumber}? This action cannot be undone.`,
-      [
-        {
-          text: 'No, Keep Order',
-          style: 'cancel',
-        },
+    showAlert({
+      type: 'warning',
+      title: 'Cancel Order',
+      message: `Are you sure you want to cancel order ${orderNumber}? This action cannot be undone.`,
+      buttons: [
+        { text: 'No, Keep Order', style: 'cancel' },
         {
           text: 'Yes, Cancel Order',
           style: 'destructive',
@@ -167,11 +166,11 @@ export default function BuyerOrdersScreen({ navigation }: BuyerOrdersScreenProps
                 order.id === orderId ? { ...order, status: 'cancelled' as const } : order
               )
             );
-            Alert.alert('Order Cancelled', `Order ${orderNumber} has been cancelled successfully.`);
+            showAlert(alertHelpers.success('Order Cancelled', `Order ${orderNumber} has been cancelled successfully.`));
           },
         },
-      ]
-    );
+      ],
+    });
   };
 
   const getOrderStats = () => {
@@ -263,7 +262,7 @@ export default function BuyerOrdersScreen({ navigation }: BuyerOrdersScreenProps
         <View style={styles.cardFooter}>
           <View style={styles.priceContainer}>
             <Text style={styles.priceLabel}>Total</Text>
-            <Text style={styles.priceValue}>${item.totalPrice.toFixed(2)}</Text>
+            <Text style={styles.priceValue}>₦{item.totalPrice.toFixed(2)}</Text>
           </View>
           <View style={styles.actionButtons}>
             {item.status === 'pending' && (

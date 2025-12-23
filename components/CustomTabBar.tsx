@@ -48,49 +48,67 @@ const SELLER_TAB_ICONS: TabIconConfig = {
   },
 };
 
+// Screens where tab bar should be hidden
+const HIDDEN_TAB_BAR_SCREENS = {
+  BROWSE_STACK: [
+    'ListingDetails',
+    'Notifications',
+    'CreateListing',
+    'SellerContact',
+    'SellerLocationMap',
+    'PlaceOrder',
+    'Favorites',
+    'ReviewListing',
+    'RateSeller',
+    'Messages',
+    'Chat',
+  ],
+  ORDERS_STACK: [
+    'OrderDetails',
+    'SellerContact',
+    'SellerLocationMap',
+    'ReviewListing',
+  ],
+  PROFILE_SCREENS: ['BuyerProfile', 'SellerProfile'],
+};
+
 export default function CustomTabBar({
   state,
   descriptors,
   navigation,
 }: BottomTabBarProps): React.ReactElement | null {
   const insets = useSafeAreaInsets();
-  // Determine if we're using buyer or seller icons
   const isBuyer = state.routes[0].name === 'Browse';
   const tabIcons = isBuyer ? BUYER_TAB_ICONS : SELLER_TAB_ICONS;
 
-  // Check if current screen should hide tab bar (ListingDetails, OrderDetails, Notifications, or Profile screens)
   const currentRoute = state.routes[state.index];
   const currentRouteName = currentRoute.name;
   
   // Hide tab bar on Profile screens
-  if (currentRouteName === 'BuyerProfile' || currentRouteName === 'SellerProfile') {
+  if (HIDDEN_TAB_BAR_SCREENS.PROFILE_SCREENS.includes(currentRouteName)) {
     return null;
   }
   
-  // For nested navigators, check the nested route
-  let shouldHideTabBar = false;
+  // Check nested routes for Browse and MyListings stacks
   if (currentRouteName === 'Browse' || currentRouteName === 'MyListings') {
-    // Check nested stack navigator state
     const nestedState = (currentRoute as { state?: { routes: Array<{ name: string }>; index: number } }).state;
-    if (nestedState && nestedState.routes && nestedState.routes[nestedState.index]) {
-      const nestedRoute = nestedState.routes[nestedState.index];
-      if (nestedRoute.name === 'ListingDetails' || nestedRoute.name === 'Notifications' || nestedRoute.name === 'CreateListing' || nestedRoute.name === 'SellerContact' || nestedRoute.name === 'SellerLocationMap') {
-        shouldHideTabBar = true;
-      }
-    }
-  } else if (currentRouteName === 'Orders') {
-    // Check nested stack navigator state for Orders
-    const nestedState = (currentRoute as { state?: { routes: Array<{ name: string }>; index: number } }).state;
-    if (nestedState && nestedState.routes && nestedState.routes[nestedState.index]) {
-      const nestedRoute = nestedState.routes[nestedState.index];
-      if (nestedRoute.name === 'OrderDetails' || nestedRoute.name === 'SellerContact' || nestedRoute.name === 'SellerLocationMap') {
-        shouldHideTabBar = true;
+    if (nestedState?.routes?.[nestedState.index]) {
+      const nestedRouteName = nestedState.routes[nestedState.index].name;
+      if (HIDDEN_TAB_BAR_SCREENS.BROWSE_STACK.includes(nestedRouteName)) {
+        return null;
       }
     }
   }
-
-  if (shouldHideTabBar) {
-    return null;
+  
+  // Check nested routes for Orders stack
+  if (currentRouteName === 'Orders') {
+    const nestedState = (currentRoute as { state?: { routes: Array<{ name: string }>; index: number } }).state;
+    if (nestedState?.routes?.[nestedState.index]) {
+      const nestedRouteName = nestedState.routes[nestedState.index].name;
+      if (HIDDEN_TAB_BAR_SCREENS.ORDERS_STACK.includes(nestedRouteName)) {
+        return null;
+      }
+    }
   }
 
   return (
@@ -145,7 +163,7 @@ export default function CustomTabBar({
               <View style={[styles.iconContainer, isFocused && styles.iconContainerActive]}>
                 <Ionicons
                   name={isFocused ? iconConfig.activeIcon : iconConfig.icon}
-                  size={24}
+                  size={15}
                   color={isFocused ? '#e27a14' : '#999'}
                 />
               </View>
@@ -176,8 +194,8 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginBottom: Platform.OS === 'ios' ? 8 : 10,
     borderRadius: 28,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
+    paddingVertical: 3,
+    paddingHorizontal: 2,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -198,9 +216,9 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   iconContainer: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 4,

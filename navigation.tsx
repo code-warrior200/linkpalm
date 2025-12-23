@@ -16,6 +16,13 @@ import OrderDetailsScreen from './screens/OrderDetailsScreen';
 import SellerContactScreen from './screens/SellerContactScreen';
 import SellerLocationMapScreen from './screens/SellerLocationMapScreen';
 import NotificationsScreen from './screens/NotificationsScreen';
+import FavoritesScreen from './screens/FavoritesScreen';
+import PlaceOrderScreen from './screens/PlaceOrderScreen';
+import ReviewListingScreen from './screens/ReviewListingScreen';
+import RateSellerScreen from './screens/RateSellerScreen';
+import MessagesScreen from './screens/MessagesScreen';
+import ChatScreen from './screens/ChatScreen';
+import SellerOrdersScreen from './screens/SellerOrdersScreen';
 import LoginScreen from './screens/LoginScreen';
 import SignUpScreen from './screens/SignUpScreen';
 import OnboardingScreen from './screens/OnboardingScreen';
@@ -55,7 +62,7 @@ function BuyerStackNavigator(): React.ReactElement {
       }}
     >
       <BuyerStack.Screen
-        name="Browse"
+        name="BrowseHome"
         component={BuyerBrowseScreen}
         options={{ headerShown: false }}
       />
@@ -89,6 +96,50 @@ function BuyerStackNavigator(): React.ReactElement {
           headerShown: false,
         }}
       />
+      <BuyerStack.Screen
+        name="PlaceOrder"
+        component={PlaceOrderScreen}
+        options={{
+          title: 'Place Order',
+          headerShown: true,
+        }}
+      />
+      <BuyerStack.Screen
+        name="Favorites"
+        component={FavoritesScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <BuyerStack.Screen
+        name="ReviewListing"
+        component={ReviewListingScreen}
+        options={{
+          title: 'Write a Review',
+          headerShown: true,
+        }}
+      />
+      <BuyerStack.Screen
+        name="RateSeller"
+        component={RateSellerScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <BuyerStack.Screen
+        name="Messages"
+        component={MessagesScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <BuyerStack.Screen
+        name="Chat"
+        component={ChatScreen}
+        options={{
+          headerShown: true,
+        }}
+      />
     </BuyerStack.Navigator>
   );
 }
@@ -110,7 +161,7 @@ function OrdersStackNavigator(): React.ReactElement {
       }}
     >
       <OrdersStack.Screen
-        name="Orders"
+        name="OrdersHome"
         component={BuyerOrdersScreen}
         options={{ headerShown: false }}
       />
@@ -137,6 +188,14 @@ function OrdersStackNavigator(): React.ReactElement {
           headerShown: false,
         }}
       />
+      <OrdersStack.Screen
+        name="ReviewListing"
+        component={ReviewListingScreen}
+        options={{
+          title: 'Write a Review',
+          headerShown: true,
+        }}
+      />
     </OrdersStack.Navigator>
   );
 }
@@ -158,7 +217,7 @@ function SellerListingsStackNavigator(): React.ReactElement {
       }}
     >
       <SellerStack.Screen
-        name="MyListings"
+        name="MyListingsHome"
         component={MyListingsScreen}
         options={{ headerShown: false }}
       />
@@ -175,6 +234,28 @@ function SellerListingsStackNavigator(): React.ReactElement {
         component={ListingDetailsScreen}
         options={{
           title: 'Listing Details',
+          headerShown: true,
+        }}
+      />
+      <SellerStack.Screen
+        name="SellerOrders"
+        component={SellerOrdersScreen}
+        options={{
+          title: 'My Orders',
+          headerShown: true,
+        }}
+      />
+      <SellerStack.Screen
+        name="Messages"
+        component={MessagesScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <SellerStack.Screen
+        name="Chat"
+        component={ChatScreen}
+        options={{
           headerShown: true,
         }}
       />

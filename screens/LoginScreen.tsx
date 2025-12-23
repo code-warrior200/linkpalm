@@ -5,7 +5,6 @@ import {
   TextInput,
   StyleSheet,
   TouchableOpacity,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -15,6 +14,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AuthStackParamList } from '../types';
 import { useAuthStore } from '../stores/authStore';
 import { UserRole } from '../stores/types';
+import { useAlert, alertHelpers } from '../contexts/AlertContext';
 import Button from '../components/Button';
 
 type LoginScreenNavigationProp = NativeStackNavigationProp<AuthStackParamList, 'Login'>;
@@ -27,12 +27,13 @@ export default function LoginScreen({ navigation }: LoginScreenProps): React.Rea
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [role, setRole] = useState<UserRole>('buyer');
+  const { showAlert } = useAlert();
   const login = useAuthStore((state) => state.login);
   const isLoading = useAuthStore((state) => state.isLoading);
 
   const handleLogin = async (): Promise<void> => {
     if (!email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
+      showAlert(alertHelpers.warning('Error', 'Please fill in all fields'));
       return;
     }
 
@@ -40,7 +41,7 @@ export default function LoginScreen({ navigation }: LoginScreenProps): React.Rea
       await login(email, password, role);
       // Navigation will be handled by AuthNavigator based on auth state
     } catch (error) {
-      Alert.alert('Login Failed', error instanceof Error ? error.message : 'Invalid credentials');
+      showAlert(alertHelpers.error('Login Failed', error instanceof Error ? error.message : 'Invalid credentials'));
     }
   };
 

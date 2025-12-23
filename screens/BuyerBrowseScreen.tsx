@@ -9,13 +9,14 @@ import {
   RefreshControl,
   ScrollView,
   Platform,
+  Image,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { BuyerStackParamList, Listing } from '../types';
 
-type BuyerBrowseScreenNavigationProp = NativeStackNavigationProp<BuyerStackParamList, 'Browse'>;
+type BuyerBrowseScreenNavigationProp = NativeStackNavigationProp<BuyerStackParamList, 'BrowseHome'>;
 
 interface BuyerBrowseScreenProps {
   navigation: BuyerBrowseScreenNavigationProp;
@@ -29,7 +30,17 @@ const MOCK_LISTINGS: Listing[] = [
     unit: '25L keg',
     location: 'Lagos, Nigeria',
     seller: 'Golden Farms Ltd',
+    sellerId: 'seller1',
     quantityAvailable: '200 kegs',
+    rating: 4.8,
+    reviewCount: 47,
+    image: 'https://i.pinimg.com/736x/93/32/27/933227c8c3df6e2ce5c0e2dc4ce84d54.jpg',
+    images: [
+      'https://i.pinimg.com/736x/93/32/27/933227c8c3df6e2ce5c0e2dc4ce84d54.jpg',
+      'https://i.pinimg.com/736x/51/56/e4/5156e40088dee0ef3088304e8faf3fab.jpg',
+      'https://i.pinimg.com/736x/dd/cd/eb/ddcdebb8c68f74a3c10f10d73fe68e6d.jpg',
+      'https://i.pinimg.com/736x/41/df/d3/41dfd3aef6e4b3a5ad47a73d85b9ed05.jpg',
+    ],
   },
   {
     id: '2',
@@ -38,7 +49,16 @@ const MOCK_LISTINGS: Listing[] = [
     unit: '5L gallon',
     location: 'Benin City, Nigeria',
     seller: 'Mama Grace',
+    sellerId: 'seller2',
     quantityAvailable: '150 gallons',
+    rating: 4.6,
+    reviewCount: 32,
+    image: 'https://i.pinimg.com/736x/51/56/e4/5156e40088dee0ef3088304e8faf3fab.jpg',
+    images: [
+      'https://i.pinimg.com/736x/51/56/e4/5156e40088dee0ef3088304e8faf3fab.jpg',
+      'https://i.pinimg.com/736x/dd/cd/eb/ddcdebb8c68f74a3c10f10d73fe68e6d.jpg',
+      'https://i.pinimg.com/736x/93/32/27/933227c8c3df6e2ce5c0e2dc4ce84d54.jpg',
+    ],
   },
   {
     id: '3',
@@ -47,7 +67,16 @@ const MOCK_LISTINGS: Listing[] = [
     unit: '200L drum',
     location: 'Port Harcourt, Nigeria',
     seller: 'Niger Delta Oils',
+    sellerId: 'seller3',
     quantityAvailable: '40 drums',
+    rating: 4.9,
+    reviewCount: 56,
+    image: 'https://i.pinimg.com/736x/dd/cd/eb/ddcdebb8c68f74a3c10f10d73fe68e6d.jpg',
+    images: [
+      'https://i.pinimg.com/736x/dd/cd/eb/ddcdebb8c68f74a3c10f10d73fe68e6d.jpg',
+      'https://i.pinimg.com/736x/41/df/d3/41dfd3aef6e4b3a5ad47a73d85b9ed05.jpg',
+      'https://i.pinimg.com/736x/93/32/27/933227c8c3df6e2ce5c0e2dc4ce84d54.jpg',
+    ],
   },
   {
     id: '4',
@@ -56,7 +85,16 @@ const MOCK_LISTINGS: Listing[] = [
     unit: '10L container',
     location: 'Ibadan, Nigeria',
     seller: 'Green Valley Farms',
+    sellerId: 'seller4',
     quantityAvailable: '80 containers',
+    rating: 4.7,
+    reviewCount: 41,
+    image: 'https://i.pinimg.com/736x/41/df/d3/41dfd3aef6e4b3a5ad47a73d85b9ed05.jpg',
+    images: [
+      'https://i.pinimg.com/736x/41/df/d3/41dfd3aef6e4b3a5ad47a73d85b9ed05.jpg',
+      'https://i.pinimg.com/736x/51/56/e4/5156e40088dee0ef3088304e8faf3fab.jpg',
+      'https://i.pinimg.com/736x/dd/cd/eb/ddcdebb8c68f74a3c10f10d73fe68e6d.jpg',
+    ],
   },
   {
     id: '5',
@@ -65,7 +103,16 @@ const MOCK_LISTINGS: Listing[] = [
     unit: '50L drum',
     location: 'Abuja, Nigeria',
     seller: 'Premium Oils Co',
+    sellerId: 'seller5',
     quantityAvailable: '60 drums',
+    rating: 4.5,
+    reviewCount: 28,
+    image: 'https://i.pinimg.com/736x/8e/35/12/8e3512a4c3e3b2b3e7c8ab95d8e8ec3a.jpg',
+    images: [
+      'https://i.pinimg.com/736x/8e/35/12/8e3512a4c3e3b2b3e7c8ab95d8e8ec3a.jpg',
+      'https://i.pinimg.com/736x/93/32/27/933227c8c3df6e2ce5c0e2dc4ce84d54.jpg',
+      'https://i.pinimg.com/736x/51/56/e4/5156e40088dee0ef3088304e8faf3fab.jpg',
+    ],
   },
   {
     id: '6',
@@ -74,7 +121,17 @@ const MOCK_LISTINGS: Listing[] = [
     unit: '15L container',
     location: 'Kano, Nigeria',
     seller: 'Natural Harvest',
+    sellerId: 'seller6',
     quantityAvailable: '100 containers',
+    rating: 4.8,
+    reviewCount: 39,
+    image: 'https://i.pinimg.com/736x/b5/8f/1e/b58f1e23d3e5a5ab75f8e0f3bc1e5c9a.jpg',
+    images: [
+      'https://i.pinimg.com/736x/b5/8f/1e/b58f1e23d3e5a5ab75f8e0f3bc1e5c9a.jpg',
+      'https://i.pinimg.com/736x/41/df/d3/41dfd3aef6e4b3a5ad47a73d85b9ed05.jpg',
+      'https://i.pinimg.com/736x/dd/cd/eb/ddcdebb8c68f74a3c10f10d73fe68e6d.jpg',
+      'https://i.pinimg.com/736x/93/32/27/933227c8c3df6e2ce5c0e2dc4ce84d54.jpg',
+    ],
   },
 ];
 
@@ -98,7 +155,7 @@ export default function BuyerBrowseScreen({ navigation }: BuyerBrowseScreenProps
 
   const onRefresh = (): void => {
     setRefreshing(true);
-    // Simulate API call
+    // Simulate API call - replace with actual API call in production
     setTimeout(() => {
       setRefreshing(false);
     }, 1000);
@@ -112,7 +169,6 @@ export default function BuyerBrowseScreen({ navigation }: BuyerBrowseScreenProps
 
     if (selectedFilter === 'all') return matchesSearch;
 
-    // Simple filter logic based on unit size
     const unit = listing.unit.toLowerCase();
     if (selectedFilter === 'small') {
       return matchesSearch && (unit.includes('5l') || unit.includes('10l'));
@@ -161,7 +217,6 @@ export default function BuyerBrowseScreen({ navigation }: BuyerBrowseScreenProps
   };
 
   const renderListingCard = ({ item }: { item: Listing }) => {
-    // Determine size category for icon
     const unit = item.unit.toLowerCase();
     let sizeIcon: keyof typeof Ionicons.glyphMap;
     if (unit.includes('5l') || unit.includes('10l')) {
@@ -181,15 +236,25 @@ export default function BuyerBrowseScreen({ navigation }: BuyerBrowseScreenProps
         activeOpacity={0.8}
       >
         <View style={styles.cardHeader}>
-          <View style={styles.cardIconContainer}>
-            <Ionicons name={sizeIcon} size={24} color="#e27a14" />
-          </View>
+          {item.image ? (
+            <View style={styles.cardImageContainer}>
+              <Image
+                source={typeof item.image === 'number' ? item.image : { uri: item.image }}
+                style={styles.cardImage}
+                resizeMode="cover"
+              />
+            </View>
+          ) : (
+            <View style={styles.cardIconContainer}>
+              <Ionicons name={sizeIcon} size={24} color="#e27a14" />
+            </View>
+          )}
           <View style={styles.cardContent}>
             <Text style={styles.cardTitle} numberOfLines={2}>
               {item.title}
             </Text>
             <View style={styles.priceContainer}>
-              <Text style={styles.price}>${item.pricePerUnit}</Text>
+              <Text style={styles.price}>₦{item.pricePerUnit}</Text>
               <Text style={styles.priceUnit}> / {item.unit}</Text>
             </View>
           </View>
@@ -214,6 +279,30 @@ export default function BuyerBrowseScreen({ navigation }: BuyerBrowseScreenProps
             <Ionicons name="cube-outline" size={14} color="#666" />
             <Text style={styles.cardInfoText}>{item.quantityAvailable}</Text>
           </View>
+        </View>
+
+        <View style={styles.cardActions}>
+          {item.rating && (
+            <View style={styles.ratingContainer}>
+              <Ionicons name="star" size={14} color="#FFD700" />
+              <Text style={styles.ratingText}>{item.rating}</Text>
+              <Text style={styles.reviewCountText}>({item.reviewCount} reviews)</Text>
+            </View>
+          )}
+          <TouchableOpacity
+            style={styles.rateSellerButton}
+            onPress={(e) => {
+              e.stopPropagation();
+              navigation.navigate('RateSeller', {
+                sellerName: item.seller,
+                sellerId: item.sellerId,
+              });
+            }}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="star-outline" size={16} color="#e27a14" />
+            <Text style={styles.rateSellerText}>Rate Seller</Text>
+          </TouchableOpacity>
         </View>
       </TouchableOpacity>
     );
@@ -249,8 +338,7 @@ export default function BuyerBrowseScreen({ navigation }: BuyerBrowseScreenProps
             onChangeText={setSearchQuery}
             returnKeyType="search"
             onSubmitEditing={() => {
-              // Search is already functional through filteredListings
-              // This handles keyboard submission
+              // Keyboard submission handled automatically via filteredListings
             }}
             clearButtonMode="never"
             autoCorrect={false}
@@ -445,6 +533,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: 12,
   },
+  cardImageContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 12,
+    overflow: 'hidden',
+    marginRight: 12,
+    backgroundColor: '#f5f5f5',
+  },
+  cardImage: {
+    width: '100%',
+    height: '100%',
+  },
   cardContent: {
     flex: 1,
   },
@@ -490,6 +590,45 @@ const styles = StyleSheet.create({
     color: '#666',
     marginLeft: 6,
     flex: 1,
+  },
+  cardActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#f0f0f0',
+  },
+  ratingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  ratingText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
+  },
+  reviewCountText: {
+    fontSize: 12,
+    color: '#666',
+  },
+  rateSellerButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: '#fff5eb',
+    borderWidth: 1,
+    borderColor: '#e27a14',
+  },
+  rateSellerText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#e27a14',
   },
   emptyContainer: {
     alignItems: 'center',

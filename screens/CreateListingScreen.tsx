@@ -5,7 +5,6 @@ import {
   TextInput,
   StyleSheet,
   TouchableOpacity,
-  Alert,
   ScrollView,
   KeyboardAvoidingView,
   Platform,
@@ -16,7 +15,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { SellerStackParamList } from '../types';
+import { SellerStackParamList, Listing } from '../types';
+import { useListingsStore } from '../stores/listingsStore';
+import { useAuthStore } from '../stores/authStore';
+import { useAlert, alertHelpers } from '../contexts/AlertContext';
 import Button from '../components/Button';
 
 type CreateListingScreenNavigationProp = NativeStackNavigationProp<SellerStackParamList, 'CreateListing'>;
@@ -39,6 +41,9 @@ export default function CreateListingScreen({
   navigation,
 }: CreateListingScreenProps): React.ReactElement {
   const insets = useSafeAreaInsets();
+  const { showAlert } = useAlert();
+  const addListing = useListingsStore((state) => state.addListing);
+  const user = useAuthStore((state) => state.user);
   const [title, setTitle] = useState<string>('');
   const [pricePerUnit, setPricePerUnit] = useState<string>('');
   const [unit, setUnit] = useState<string>('');
@@ -54,11 +59,10 @@ export default function CreateListingScreen({
     if (Platform.OS !== 'web') {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert(
+        showAlert(alertHelpers.warning(
           'Permission Required',
-          'Sorry, we need camera roll permissions to upload product images!',
-          [{ text: 'OK' }]
-        );
+          'Sorry, we need camera roll permissions to upload product images!'
+        ));
         return false;
       }
     }
@@ -69,11 +73,10 @@ export default function CreateListingScreen({
     if (Platform.OS !== 'web') {
       const { status } = await ImagePicker.requestCameraPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert(
+        showAlert(alertHelpers.warning(
           'Permission Required',
-          'Sorry, we need camera permissions to take photos!',
-          [{ text: 'OK' }]
-        );
+          'Sorry, we need camera permissions to take photos!'
+        ));
         return false;
       }
     }
@@ -81,10 +84,11 @@ export default function CreateListingScreen({
   };
 
   const handleImagePicker = async (): Promise<void> => {
-    Alert.alert(
-      'Select Product Image',
-      'Choose an option',
-      [
+    showAlert({
+      type: 'info',
+      title: 'Select Product Image',
+      message: 'Choose an option',
+      buttons: [
         {
           text: 'Camera',
           onPress: async () => {
@@ -92,7 +96,8 @@ export default function CreateListingScreen({
             if (!hasPermission) return;
 
             const result = await ImagePicker.launchCameraAsync({
-              mediaTypes: ImagePicker.MediaTypeOptions.Images,
+              // @ts-ignore - Using new mediaType API (replaces deprecated mediaTypes)
+              mediaType: ImagePicker.MediaTypeOptions.Images,
               allowsEditing: true,
               aspect: [4, 3],
               quality: 0.8,
@@ -110,7 +115,8 @@ export default function CreateListingScreen({
             if (!hasPermission) return;
 
             const result = await ImagePicker.launchImageLibraryAsync({
-              mediaTypes: ImagePicker.MediaTypeOptions.Images,
+              // @ts-ignore - Using new mediaType API (replaces deprecated mediaTypes)
+              mediaType: ImagePicker.MediaTypeOptions.Images,
               allowsEditing: true,
               aspect: [4, 3],
               quality: 0.8,
@@ -121,58 +127,57 @@ export default function CreateListingScreen({
             }
           },
         },
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
+        { text: 'Cancel', style: 'cancel' },
       ],
-      { cancelable: true }
-    );
+    });
   };
 
   const handleRemoveImage = (): void => {
-    Alert.alert(
+    showAlert(alertHelpers.delete(
       'Remove Image',
       'Are you sure you want to remove this image?',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Remove',
-          style: 'destructive',
-          onPress: () => {
-            setProductImage(null);
-          },
-        },
-      ]
-    );
+      () => setProductImage(null)
+    ));
   };
 
   const handleSubmit = async (): Promise<void> => {
     if (!title || !pricePerUnit || !unit || !location || !quantityAvailable) {
-      Alert.alert('Missing Information', 'Please fill in all required fields.');
+      showAlert(alertHelpers.warning('Missing Information', 'Please fill in all required fields.'));
       return;
     }
 
     const price = parseFloat(pricePerUnit);
     if (isNaN(price) || price <= 0) {
-      Alert.alert('Invalid Price', 'Please enter a valid price greater than 0.');
+      showAlert(alertHelpers.warning('Invalid Price', 'Please enter a valid price greater than 0.'));
       return;
     }
 
     setIsSubmitting(true);
-    // Simulate API call (in real app, upload image and create listing)
+    
+    // Simulate API call - in production, upload image to server and get URL
     await new Promise((resolve) => setTimeout(resolve, 1500));
+    
+    const newListing: Listing = {
+      id: Date.now().toString(),
+      title,
+      pricePerUnit: price,
+      unit,
+      location,
+      seller: user?.name || 'Unknown Seller',
+      quantityAvailable,
+      image: productImage || undefined,
+      sellerId: ''
+    };
+
+    addListing(newListing);
+    
     setIsSubmitting(false);
 
-    Alert.alert('Success', 'Your palm oil listing has been created successfully!', [
-      {
-        text: 'OK',
-        onPress: () => navigation.goBack(),
-      },
-    ]);
+    showAlert(alertHelpers.success(
+      'Success',
+      'Your palm oil listing has been created successfully!',
+      () => navigation.goBack()
+    ));
   };
 
   const renderInputField = (
@@ -432,7 +437,6 @@ export default function CreateListingScreen({
           disabled={isSubmitting}
           icon="checkmark-circle"
           iconPosition="left"
-          fullWidth
           style={styles.submitButton}
         />
 

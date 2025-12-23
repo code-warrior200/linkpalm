@@ -6,13 +6,14 @@ import {
   TouchableOpacity,
   StyleSheet,
   RefreshControl,
+  Image,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { SellerStackParamList, Listing } from '../types';
 
-type MyListingsScreenNavigationProp = NativeStackNavigationProp<SellerStackParamList, 'MyListings'>;
+type MyListingsScreenNavigationProp = NativeStackNavigationProp<SellerStackParamList, 'MyListingsHome'>;
 
 interface MyListingsScreenProps {
   navigation: MyListingsScreenNavigationProp;
@@ -26,7 +27,16 @@ const MOCK_MY_LISTINGS: Listing[] = [
     unit: '20L keg',
     location: 'Abeokuta, Nigeria',
     seller: 'Demo Trader',
+    sellerId: 'seller1',
     quantityAvailable: '50 kegs',
+    rating: 4.7,
+    reviewCount: 23,
+    image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=600&fit=crop',
+    images: [
+      'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=600&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=600&fit=crop&q=80',
+    ],
   },
 ];
 
@@ -37,7 +47,7 @@ export default function MyListingsScreen({ navigation }: MyListingsScreenProps):
 
   const onRefresh = (): void => {
     setRefreshing(true);
-    // Simulate API call
+    // Simulate API call - replace with actual API call in production
     setTimeout(() => {
       setRefreshing(false);
     }, 1000);
@@ -49,6 +59,15 @@ export default function MyListingsScreen({ navigation }: MyListingsScreenProps):
       onPress={() => navigation.navigate('ListingDetails', { listing: item })}
       activeOpacity={0.7}
     >
+      {item.image && (
+        <View style={styles.cardImageContainer}>
+          <Image
+            source={typeof item.image === 'number' ? item.image : { uri: item.image }}
+            style={styles.cardImage}
+            resizeMode="cover"
+          />
+        </View>
+      )}
       <View style={styles.cardHeader}>
         <View style={styles.cardHeaderLeft}>
           <View style={styles.statusBadge}>
@@ -59,7 +78,7 @@ export default function MyListingsScreen({ navigation }: MyListingsScreenProps):
         <TouchableOpacity
           style={styles.moreButton}
           onPress={() => {
-            // Handle more options
+            // TODO: Implement more options menu
           }}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
@@ -72,7 +91,7 @@ export default function MyListingsScreen({ navigation }: MyListingsScreenProps):
       </Text>
 
       <View style={styles.priceContainer}>
-        <Text style={styles.price}>${item.pricePerUnit}</Text>
+        <Text style={styles.price}>₦{item.pricePerUnit}</Text>
         <Text style={styles.priceUnit}>/{item.unit}</Text>
       </View>
 
@@ -103,7 +122,7 @@ export default function MyListingsScreen({ navigation }: MyListingsScreenProps):
         <TouchableOpacity
           style={styles.editButton}
           onPress={() => {
-            // Handle edit
+            // TODO: Implement edit functionality
           }}
         >
           <Ionicons name="create-outline" size={16} color="#e27a14" />
@@ -240,6 +259,19 @@ const styles = StyleSheet.create({
     elevation: 3,
     borderWidth: 1,
     borderColor: '#f0f0f0',
+    overflow: 'hidden',
+  },
+  cardImageContainer: {
+    width: '100%',
+    height: 200,
+    marginBottom: 16,
+    marginHorizontal: -20,
+    marginTop: -20,
+    backgroundColor: '#f5f5f5',
+  },
+  cardImage: {
+    width: '100%',
+    height: '100%',
   },
   cardHeader: {
     flexDirection: 'row',

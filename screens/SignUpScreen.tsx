@@ -5,7 +5,6 @@ import {
   TextInput,
   StyleSheet,
   TouchableOpacity,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -15,6 +14,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AuthStackParamList } from '../types';
 import { useAuthStore } from '../stores/authStore';
 import { UserRole } from '../stores/types';
+import { useAlert, alertHelpers } from '../contexts/AlertContext';
 import Button from '../components/Button';
 
 type SignUpScreenNavigationProp = NativeStackNavigationProp<AuthStackParamList, 'SignUp'>;
@@ -29,22 +29,23 @@ export default function SignUpScreen({ navigation }: SignUpScreenProps): React.R
   const [password, setPassword] = useState<string>('');
   const [confirmPassword, setConfirmPassword] = useState<string>('');
   const [role, setRole] = useState<UserRole>('buyer');
+  const { showAlert } = useAlert();
   const signUp = useAuthStore((state) => state.signUp);
   const isLoading = useAuthStore((state) => state.isLoading);
 
   const handleSignUp = async (): Promise<void> => {
     if (!name || !email || !password || !confirmPassword) {
-      Alert.alert('Error', 'Please fill in all fields');
+      showAlert(alertHelpers.warning('Error', 'Please fill in all fields'));
       return;
     }
 
     if (password !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
+      showAlert(alertHelpers.warning('Error', 'Passwords do not match'));
       return;
     }
 
     if (password.length < 6) {
-      Alert.alert('Error', 'Password must be at least 6 characters');
+      showAlert(alertHelpers.warning('Error', 'Password must be at least 6 characters'));
       return;
     }
 
@@ -52,7 +53,7 @@ export default function SignUpScreen({ navigation }: SignUpScreenProps): React.R
       await signUp(email, password, name, role);
       // Navigation will be handled by AuthNavigator based on auth state
     } catch (error) {
-      Alert.alert('Sign Up Failed', error instanceof Error ? error.message : 'Please try again');
+      showAlert(alertHelpers.error('Sign Up Failed', error instanceof Error ? error.message : 'Please try again'));
     }
   };
 

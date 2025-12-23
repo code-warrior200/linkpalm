@@ -7,12 +7,12 @@ import {
   TouchableOpacity,
   Platform,
   RefreshControl,
-  Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { BuyerStackParamList } from '../types';
+import { useAlert, alertHelpers } from '../contexts/AlertContext';
 
 type NotificationsScreenNavigationProp = NativeStackNavigationProp<BuyerStackParamList, 'Notifications'>;
 
@@ -75,6 +75,7 @@ interface NotificationsScreenProps {
 
 export default function NotificationsScreen({ navigation }: NotificationsScreenProps): React.ReactElement {
   const insets = useSafeAreaInsets();
+  const { showAlert } = useAlert();
   const [notifications, setNotifications] = useState<Notification[]>(MOCK_NOTIFICATIONS);
   const [refreshing, setRefreshing] = useState<boolean>(false);
 
@@ -100,23 +101,11 @@ export default function NotificationsScreen({ navigation }: NotificationsScreenP
   };
 
   const clearAllNotifications = (): void => {
-    Alert.alert(
+    showAlert(alertHelpers.delete(
       'Clear All Notifications',
       'Are you sure you want to delete all notifications? This action cannot be undone.',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Clear All',
-          style: 'destructive',
-          onPress: () => {
-            setNotifications([]);
-          },
-        },
-      ]
-    );
+      () => setNotifications([])
+    ));
   };
 
   const unreadCount = notifications.filter((n) => !n.read).length;

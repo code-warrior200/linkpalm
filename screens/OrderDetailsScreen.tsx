@@ -160,16 +160,16 @@ export default function OrderDetailsScreen({ route, navigation }: OrderDetailsSc
           <View style={styles.summaryCard}>
             <View style={styles.summaryRow}>
               <Text style={styles.summaryLabel}>Subtotal</Text>
-              <Text style={styles.summaryValue}>${order.totalPrice.toFixed(2)}</Text>
+              <Text style={styles.summaryValue}>₦{order.totalPrice.toFixed(2)}</Text>
             </View>
             <View style={styles.summaryRow}>
               <Text style={styles.summaryLabel}>Shipping</Text>
-              <Text style={styles.summaryValue}>$0.00</Text>
+              <Text style={styles.summaryValue}>₦0.00</Text>
             </View>
             <View style={styles.summaryDivider} />
             <View style={styles.summaryRow}>
               <Text style={styles.summaryTotalLabel}>Total</Text>
-              <Text style={styles.summaryTotalValue}>${order.totalPrice.toFixed(2)}</Text>
+              <Text style={styles.summaryTotalValue}>₦{order.totalPrice.toFixed(2)}</Text>
             </View>
           </View>
         </View>
