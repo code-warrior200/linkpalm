@@ -11,22 +11,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
-import { OrdersStackParamList } from '../types';
+import { Order, OrdersStackParamList } from '../types';
 import Button from '../components/Button';
 
 type OrderDetailsScreenNavigationProp = NativeStackNavigationProp<OrdersStackParamList, 'OrderDetails'>;
 type OrderDetailsScreenRouteProp = RouteProp<OrdersStackParamList, 'OrderDetails'>;
-
-interface Order {
-  id: string;
-  listingTitle: string;
-  quantity: string;
-  totalPrice: number;
-  status: 'pending' | 'confirmed' | 'delivered' | 'cancelled';
-  date: string;
-  seller: string;
-  orderNumber: string;
-}
 
 interface OrderDetailsScreenProps {
   navigation: OrderDetailsScreenNavigationProp;
@@ -39,6 +28,14 @@ export default function OrderDetailsScreen({ route, navigation }: OrderDetailsSc
 
   const getStatusConfig = (status: Order['status']) => {
     switch (status) {
+      case 'in-transit':
+        return {
+          color: '#9c27b0',
+          bgColor: '#f3e5f5',
+          icon: 'car' as keyof typeof Ionicons.glyphMap,
+          label: 'In Transit',
+          description: 'Your order is on the way',
+        };
       case 'pending':
         return {
           color: '#ff9800',
@@ -84,6 +81,7 @@ export default function OrderDetailsScreen({ route, navigation }: OrderDetailsSc
 
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
+    if (isNaN(date.getTime())) return dateString;
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     return `${days[date.getDay()]}, ${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
@@ -211,7 +209,7 @@ export default function OrderDetailsScreen({ route, navigation }: OrderDetailsSc
         <View style={styles.section}>
           <Button
             title="Contact Seller"
-            onPress={() => navigation.navigate('SellerContact', { sellerName: order.seller })}
+            onPress={() => navigation.navigate('SellerContact', { sellerName: order.seller, sellerId: order.sellerId })}
             variant="secondary"
             size="medium"
             icon="chatbubble-outline"

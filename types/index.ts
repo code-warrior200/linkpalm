@@ -64,6 +64,8 @@ export interface Conversation {
   lastMessage: string;
   lastMessageTime: string;
   unreadCount: number;
+  /** User ID for whom unreadCount applies (the receiver of unread messages) */
+  unreadForUserId?: string;
   listingId?: string;
   listingTitle?: string;
 }

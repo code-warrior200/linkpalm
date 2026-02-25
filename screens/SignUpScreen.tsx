@@ -69,7 +69,7 @@ export default function SignUpScreen({ navigation }: SignUpScreenProps): React.R
         <View style={styles.content}>
           <View style={styles.logoContainer}>
             <Image 
-              source={require('../assets/palm-link.png')} 
+              source={require('../assets/images/oil1.png')} 
               style={styles.logo} 
               resizeMode="contain"
             />

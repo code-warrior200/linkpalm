@@ -5,8 +5,8 @@ import {
   FlatList,
   TouchableOpacity,
   StyleSheet,
-  Image,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -161,6 +161,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 180,
     backgroundColor: '#f0f0f0',
+    overflow: 'hidden',
   },
   cardImage: {
     width: '100%',

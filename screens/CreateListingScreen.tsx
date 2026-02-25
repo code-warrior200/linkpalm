@@ -166,7 +166,7 @@ export default function CreateListingScreen({
       seller: user?.name || 'Unknown Seller',
       quantityAvailable,
       image: productImage || undefined,
-      sellerId: ''
+      sellerId: user?.id || ''
     };
 
     addListing(newListing);

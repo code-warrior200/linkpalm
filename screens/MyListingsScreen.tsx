@@ -6,8 +6,8 @@ import {
   TouchableOpacity,
   StyleSheet,
   RefreshControl,
-  Image,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -23,7 +23,7 @@ const MOCK_MY_LISTINGS: Listing[] = [
   {
     id: 'm1',
     title: 'Organic village palm oil - 20L',
-    pricePerUnit: 65,
+    pricePerUnit: 40000,
     unit: '20L keg',
     location: 'Abeokuta, Nigeria',
     seller: 'Demo Trader',
@@ -31,11 +31,11 @@ const MOCK_MY_LISTINGS: Listing[] = [
     quantityAvailable: '50 kegs',
     rating: 4.7,
     reviewCount: 23,
-    image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=600&fit=crop',
+    image: require('../assets/images/palm3.png'),
     images: [
-      'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=600&fit=crop',
-      'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=600&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=600&fit=crop&q=80',
+      require('../assets/images/palm3.png'),
+      require('../assets/images/oil1.png'),
+      require('../assets/images/palm4.png'),
     ],
   },
 ];
@@ -62,9 +62,9 @@ export default function MyListingsScreen({ navigation }: MyListingsScreenProps):
       {item.image && (
         <View style={styles.cardImageContainer}>
           <Image
-            source={typeof item.image === 'number' ? item.image : { uri: item.image }}
+            source={typeof item.image === 'number' ? item.image : item.image}
             style={styles.cardImage}
-            resizeMode="cover"
+            contentFit="cover"
           />
         </View>
       )}
@@ -268,6 +268,7 @@ const styles = StyleSheet.create({
     marginHorizontal: -20,
     marginTop: -20,
     backgroundColor: '#f5f5f5',
+    overflow: 'hidden',
   },
   cardImage: {
     width: '100%',

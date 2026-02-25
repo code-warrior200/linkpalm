@@ -9,8 +9,8 @@ import {
   RefreshControl,
   ScrollView,
   Platform,
-  Image,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -22,11 +22,31 @@ interface BuyerBrowseScreenProps {
   navigation: BuyerBrowseScreenNavigationProp;
 }
 
+// Nigerian palm oil market prices (₦) – Feb 2025 reference
+// Source: NBS, market surveys. Update periodically for latest rates.
+const MARKET_PRICES: Array<{ quantity: string; price: number }> = [
+  { quantity: '1L', price: 2500 },
+  { quantity: '5L', price: 12000 },
+  { quantity: '10L', price: 22000 },
+  { quantity: '20L', price: 40000 },
+  { quantity: '25L', price: 45000 },
+  { quantity: '50L', price: 110000 },
+  { quantity: '200L', price: 450000 },
+];
+
+// Product images (WildSparks, Red Gold Xomi, Praise African)
+const PALM_OIL_IMAGES = [
+  require('../assets/images/oil1.png'),   // WildSparks 25L
+  require('../assets/images/palm2.png'),  // Red Gold Xomi
+  require('../assets/images/palm3.png'),  // WildSparks various
+  require('../assets/images/palm4.png'),  // Praise African
+];
+
 const MOCK_LISTINGS: Listing[] = [
   {
     id: '1',
-    title: 'Premium Red Palm Oil - 25L',
-    pricePerUnit: 80,
+    title: 'WildSparks Premium Palm Oil - 25L',
+    pricePerUnit: 45000,
     unit: '25L keg',
     location: 'Lagos, Nigeria',
     seller: 'Golden Farms Ltd',
@@ -34,18 +54,13 @@ const MOCK_LISTINGS: Listing[] = [
     quantityAvailable: '200 kegs',
     rating: 4.8,
     reviewCount: 47,
-    image: 'https://i.pinimg.com/736x/93/32/27/933227c8c3df6e2ce5c0e2dc4ce84d54.jpg',
-    images: [
-      'https://i.pinimg.com/736x/93/32/27/933227c8c3df6e2ce5c0e2dc4ce84d54.jpg',
-      'https://i.pinimg.com/736x/51/56/e4/5156e40088dee0ef3088304e8faf3fab.jpg',
-      'https://i.pinimg.com/736x/dd/cd/eb/ddcdebb8c68f74a3c10f10d73fe68e6d.jpg',
-      'https://i.pinimg.com/736x/41/df/d3/41dfd3aef6e4b3a5ad47a73d85b9ed05.jpg',
-    ],
+    image: PALM_OIL_IMAGES[0],
+    images: [PALM_OIL_IMAGES[0], PALM_OIL_IMAGES[2]],
   },
   {
     id: '2',
-    title: 'Village-processed Palm Oil - 5L',
-    pricePerUnit: 20,
+    title: 'Red Gold Xomi Palm Oil - 5L',
+    pricePerUnit: 12000,
     unit: '5L gallon',
     location: 'Benin City, Nigeria',
     seller: 'Mama Grace',
@@ -53,17 +68,13 @@ const MOCK_LISTINGS: Listing[] = [
     quantityAvailable: '150 gallons',
     rating: 4.6,
     reviewCount: 32,
-    image: 'https://i.pinimg.com/736x/51/56/e4/5156e40088dee0ef3088304e8faf3fab.jpg',
-    images: [
-      'https://i.pinimg.com/736x/51/56/e4/5156e40088dee0ef3088304e8faf3fab.jpg',
-      'https://i.pinimg.com/736x/dd/cd/eb/ddcdebb8c68f74a3c10f10d73fe68e6d.jpg',
-      'https://i.pinimg.com/736x/93/32/27/933227c8c3df6e2ce5c0e2dc4ce84d54.jpg',
-    ],
+    image: PALM_OIL_IMAGES[1],
+    images: [PALM_OIL_IMAGES[1], PALM_OIL_IMAGES[2]],
   },
   {
     id: '3',
     title: 'Bulk Palm Oil - 200L drums',
-    pricePerUnit: 500,
+    pricePerUnit: 450000,
     unit: '200L drum',
     location: 'Port Harcourt, Nigeria',
     seller: 'Niger Delta Oils',
@@ -71,17 +82,13 @@ const MOCK_LISTINGS: Listing[] = [
     quantityAvailable: '40 drums',
     rating: 4.9,
     reviewCount: 56,
-    image: 'https://i.pinimg.com/736x/dd/cd/eb/ddcdebb8c68f74a3c10f10d73fe68e6d.jpg',
-    images: [
-      'https://i.pinimg.com/736x/dd/cd/eb/ddcdebb8c68f74a3c10f10d73fe68e6d.jpg',
-      'https://i.pinimg.com/736x/41/df/d3/41dfd3aef6e4b3a5ad47a73d85b9ed05.jpg',
-      'https://i.pinimg.com/736x/93/32/27/933227c8c3df6e2ce5c0e2dc4ce84d54.jpg',
-    ],
+    image: PALM_OIL_IMAGES[2],
+    images: [PALM_OIL_IMAGES[2], PALM_OIL_IMAGES[0]],
   },
   {
     id: '4',
-    title: 'Organic Palm Oil - 10L',
-    pricePerUnit: 35,
+    title: 'Praise African Palm Oil - 10L',
+    pricePerUnit: 22000,
     unit: '10L container',
     location: 'Ibadan, Nigeria',
     seller: 'Green Valley Farms',
@@ -89,17 +96,13 @@ const MOCK_LISTINGS: Listing[] = [
     quantityAvailable: '80 containers',
     rating: 4.7,
     reviewCount: 41,
-    image: 'https://i.pinimg.com/736x/41/df/d3/41dfd3aef6e4b3a5ad47a73d85b9ed05.jpg',
-    images: [
-      'https://i.pinimg.com/736x/41/df/d3/41dfd3aef6e4b3a5ad47a73d85b9ed05.jpg',
-      'https://i.pinimg.com/736x/51/56/e4/5156e40088dee0ef3088304e8faf3fab.jpg',
-      'https://i.pinimg.com/736x/dd/cd/eb/ddcdebb8c68f74a3c10f10d73fe68e6d.jpg',
-    ],
+    image: PALM_OIL_IMAGES[3],
+    images: [PALM_OIL_IMAGES[3], PALM_OIL_IMAGES[1]],
   },
   {
     id: '5',
     title: 'Refined Palm Oil - 50L',
-    pricePerUnit: 150,
+    pricePerUnit: 110000,
     unit: '50L drum',
     location: 'Abuja, Nigeria',
     seller: 'Premium Oils Co',
@@ -107,17 +110,13 @@ const MOCK_LISTINGS: Listing[] = [
     quantityAvailable: '60 drums',
     rating: 4.5,
     reviewCount: 28,
-    image: 'https://i.pinimg.com/736x/8e/35/12/8e3512a4c3e3b2b3e7c8ab95d8e8ec3a.jpg',
-    images: [
-      'https://i.pinimg.com/736x/8e/35/12/8e3512a4c3e3b2b3e7c8ab95d8e8ec3a.jpg',
-      'https://i.pinimg.com/736x/93/32/27/933227c8c3df6e2ce5c0e2dc4ce84d54.jpg',
-      'https://i.pinimg.com/736x/51/56/e4/5156e40088dee0ef3088304e8faf3fab.jpg',
-    ],
+    image: PALM_OIL_IMAGES[0],
+    images: [PALM_OIL_IMAGES[0], PALM_OIL_IMAGES[2]],
   },
   {
     id: '6',
     title: 'Cold-pressed Palm Oil - 15L',
-    pricePerUnit: 55,
+    pricePerUnit: 33000,
     unit: '15L container',
     location: 'Kano, Nigeria',
     seller: 'Natural Harvest',
@@ -125,13 +124,8 @@ const MOCK_LISTINGS: Listing[] = [
     quantityAvailable: '100 containers',
     rating: 4.8,
     reviewCount: 39,
-    image: 'https://i.pinimg.com/736x/b5/8f/1e/b58f1e23d3e5a5ab75f8e0f3bc1e5c9a.jpg',
-    images: [
-      'https://i.pinimg.com/736x/b5/8f/1e/b58f1e23d3e5a5ab75f8e0f3bc1e5c9a.jpg',
-      'https://i.pinimg.com/736x/41/df/d3/41dfd3aef6e4b3a5ad47a73d85b9ed05.jpg',
-      'https://i.pinimg.com/736x/dd/cd/eb/ddcdebb8c68f74a3c10f10d73fe68e6d.jpg',
-      'https://i.pinimg.com/736x/93/32/27/933227c8c3df6e2ce5c0e2dc4ce84d54.jpg',
-    ],
+    image: PALM_OIL_IMAGES[2],
+    images: [PALM_OIL_IMAGES[2], PALM_OIL_IMAGES[3]],
   },
 ];
 
@@ -239,9 +233,9 @@ export default function BuyerBrowseScreen({ navigation }: BuyerBrowseScreenProps
           {item.image ? (
             <View style={styles.cardImageContainer}>
               <Image
-                source={typeof item.image === 'number' ? item.image : { uri: item.image }}
+                source={typeof item.image === 'number' ? item.image : item.image}
                 style={styles.cardImage}
-                resizeMode="cover"
+                contentFit="cover"
               />
             </View>
           ) : (
@@ -363,6 +357,23 @@ export default function BuyerBrowseScreen({ navigation }: BuyerBrowseScreenProps
         >
           {FILTER_CATEGORIES.map((filter, index) => renderFilterChip(filter, index))}
         </ScrollView>
+
+        {/* Market Prices */}
+        <View style={styles.marketPricesSection}>
+          <Text style={styles.marketPricesLabel}>Market prices (₦)</Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.marketPricesList}
+          >
+            {MARKET_PRICES.map(({ quantity, price }) => (
+              <View key={quantity} style={[styles.marketPriceChip, { marginRight: 8 }]}>
+                <Text style={styles.marketPriceQuantity}>{quantity}</Text>
+                <Text style={styles.marketPriceValue}>₦{price.toLocaleString()}</Text>
+              </View>
+            ))}
+          </ScrollView>
+        </View>
       </View>
 
       {/* Listings */}
@@ -468,6 +479,42 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     padding: 4,
   },
+  marketPricesSection: {
+    paddingTop: 12,
+    paddingBottom: 4,
+    borderTopWidth: 1,
+    borderTopColor: '#f0f0f0',
+  },
+  marketPricesLabel: {
+    fontSize: 12,
+    color: '#666',
+    marginBottom: 8,
+    paddingHorizontal: 20,
+  },
+  marketPricesList: {
+    paddingHorizontal: 20,
+    flexDirection: 'row',
+  },
+  marketPriceChip: {
+    backgroundColor: '#fff5eb',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ffe4cc',
+    minWidth: 70,
+    alignItems: 'center',
+  },
+  marketPriceQuantity: {
+    fontSize: 11,
+    color: '#666',
+    marginBottom: 2,
+  },
+  marketPriceValue: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#e27a14',
+  },
   filtersContainer: {
     paddingRight: 20,
   },
@@ -540,6 +587,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     marginRight: 12,
     backgroundColor: '#f5f5f5',
+    flexShrink: 0,
   },
   cardImage: {
     width: '100%',

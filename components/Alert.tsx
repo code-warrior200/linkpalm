@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Animated,
   Dimensions,
+  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
@@ -123,7 +124,11 @@ export default function Alert({
       onRequestClose={onDismiss}
     >
       <View style={styles.overlay}>
-        <BlurView intensity={20} style={StyleSheet.absoluteFill} tint="dark" />
+        {Platform.OS === 'web' ? (
+          <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.5)' }]} />
+        ) : (
+          <BlurView intensity={20} style={StyleSheet.absoluteFill} tint="dark" />
+        )}
         
         <Animated.View
           style={[

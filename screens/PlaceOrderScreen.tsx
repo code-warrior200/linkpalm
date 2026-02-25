@@ -51,9 +51,10 @@ export default function PlaceOrderScreen({ route, navigation }: PlaceOrderScreen
 
     setIsSubmitting(true);
 
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 1500));
 
-    const newOrder: Order = {
+      const newOrder: Order = {
       id: Date.now().toString(),
       listingId: listing.id,
       listingTitle: listing.title,
@@ -70,14 +71,21 @@ export default function PlaceOrderScreen({ route, navigation }: PlaceOrderScreen
       notes: notes.trim() || undefined,
     };
 
-    addOrder(newOrder);
-    setIsSubmitting(false);
+      addOrder(newOrder);
 
-    showAlert(alertHelpers.success(
-      'Order Placed!',
-      `Your order (${newOrder.orderNumber}) has been placed successfully. The seller will contact you soon.`,
-      () => navigation.navigate('BrowseHome' as never)
-    ));
+      showAlert(alertHelpers.success(
+        'Order Placed!',
+        `Your order (${newOrder.orderNumber}) has been placed successfully. The seller will contact you soon.`,
+        () => navigation.navigate('BrowseHome' as never)
+      ));
+    } catch (error) {
+      showAlert(alertHelpers.error(
+        'Order Failed',
+        'Something went wrong. Please try again.'
+      ));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

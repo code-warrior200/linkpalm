@@ -16,7 +16,7 @@ import { OrdersStackParamList, Order } from '../types';
 import { useAlert, alertHelpers } from '../contexts/AlertContext';
 import Button from '../components/Button';
 
-type BuyerOrdersScreenNavigationProp = NativeStackNavigationProp<OrdersStackParamList, 'Orders'>;
+type BuyerOrdersScreenNavigationProp = NativeStackNavigationProp<OrdersStackParamList, 'OrdersHome'>;
 
 interface BuyerOrdersScreenProps {
   navigation: BuyerOrdersScreenNavigationProp;
@@ -25,62 +25,83 @@ interface BuyerOrdersScreenProps {
 const MOCK_ORDERS: Order[] = [
   {
     id: '1',
+    listingId: '1',
     listingTitle: 'Premium Red Palm Oil - 25L',
-    quantity: '5 kegs',
-    totalPrice: 400,
+    quantity: 5,
+    totalPrice: 225000,
     status: 'confirmed',
     date: '2024-01-15',
     seller: 'Golden Farms Ltd',
+    sellerId: 'seller1',
+    buyer: 'Demo Buyer',
+    buyerId: 'buyer1',
     orderNumber: 'ORD-2024-001',
   },
   {
     id: '2',
+    listingId: '2',
     listingTitle: 'Village-processed Palm Oil - 5L',
-    quantity: '10 gallons',
-    totalPrice: 200,
+    quantity: 10,
+    totalPrice: 120000,
     status: 'delivered',
     date: '2024-01-10',
     seller: 'Mama Grace',
+    sellerId: 'seller2',
+    buyer: 'Demo Buyer',
+    buyerId: 'buyer1',
     orderNumber: 'ORD-2024-002',
   },
   {
     id: '3',
+    listingId: '4',
     listingTitle: 'Organic Palm Oil - 10L',
-    quantity: '3 containers',
-    totalPrice: 105,
+    quantity: 3,
+    totalPrice: 66000,
     status: 'pending',
     date: '2024-01-18',
     seller: 'Green Valley Farms',
+    sellerId: 'seller4',
+    buyer: 'Demo Buyer',
+    buyerId: 'buyer1',
     orderNumber: 'ORD-2024-003',
   },
   {
     id: '4',
+    listingId: '3',
     listingTitle: 'Bulk Palm Oil - 200L drums',
-    quantity: '2 drums',
-    totalPrice: 1000,
-    status: 'delivered',
+    quantity: 2,
+    totalPrice: 900000,
+    status: 'in-transit',
     date: '2024-01-05',
     seller: 'Niger Delta Oils',
+    sellerId: 'seller3',
+    buyer: 'Demo Buyer',
+    buyerId: 'buyer1',
     orderNumber: 'ORD-2024-004',
   },
   {
     id: '5',
+    listingId: '5',
     listingTitle: 'Refined Palm Oil - 50L',
-    quantity: '1 drum',
-    totalPrice: 150,
+    quantity: 1,
+    totalPrice: 110000,
     status: 'cancelled',
     date: '2024-01-12',
     seller: 'Premium Oils Co',
+    sellerId: 'seller5',
+    buyer: 'Demo Buyer',
+    buyerId: 'buyer1',
     orderNumber: 'ORD-2024-005',
   },
 ];
 
-type OrderStatus = 'all' | 'pending' | 'confirmed' | 'delivered' | 'cancelled';
+type OrderStatus = 'all' | 'pending' | 'confirmed' | 'in-transit' | 'delivered' | 'cancelled';
 
 const STATUS_FILTERS: Array<{ id: OrderStatus; label: string; icon: keyof typeof Ionicons.glyphMap }> = [
   { id: 'all', label: 'All', icon: 'list-outline' },
   { id: 'pending', label: 'Pending', icon: 'time-outline' },
   { id: 'confirmed', label: 'Confirmed', icon: 'checkmark-circle-outline' },
+  { id: 'in-transit', label: 'In Transit', icon: 'car-outline' },
   { id: 'delivered', label: 'Delivered', icon: 'checkmark-done-outline' },
   { id: 'cancelled', label: 'Cancelled', icon: 'close-circle-outline' },
 ];
@@ -119,6 +140,13 @@ export default function BuyerOrdersScreen({ navigation }: BuyerOrdersScreenProps
           bgColor: '#e3f2fd',
           icon: 'checkmark-circle' as keyof typeof Ionicons.glyphMap,
           label: 'Confirmed',
+        };
+      case 'in-transit':
+        return {
+          color: '#9c27b0',
+          bgColor: '#f3e5f5',
+          icon: 'car' as keyof typeof Ionicons.glyphMap,
+          label: 'In Transit',
         };
       case 'delivered':
         return {

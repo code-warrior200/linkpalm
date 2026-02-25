@@ -96,7 +96,7 @@ export default function OnboardingScreen({ navigation }: OnboardingScreenProps):
           <View key={index} style={styles.slide}>
             <View style={styles.logoContainer}>
               <Image 
-                source={require('../assets/palm-link.png')} 
+                source={require('../assets/images/oil1.png')} 
                 style={styles.logo} 
                 resizeMode="contain"
               />

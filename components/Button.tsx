@@ -140,7 +140,7 @@ export default function Button({
       return (
         <ActivityIndicator
           color={variant === 'primary' || variant === 'destructive' ? '#fff' : '#e27a14'}
-          size={size === 'small' ? 'small' : 'small'}
+          size={size === 'large' ? 'large' : 'small'}
         />
       );
     }

@@ -29,11 +29,15 @@ export const useMessagesStore = create<MessagesState>((set, get) => ({
       let newConversations = [...state.conversations];
       
       if (existingConvIndex >= 0) {
+        const conv = newConversations[existingConvIndex];
+        // Only increment unread for the receiver (not when sender adds their own message)
+        const prevUnreadForReceiver = conv.unreadForUserId === message.receiverId ? conv.unreadCount : 0;
         newConversations[existingConvIndex] = {
-          ...newConversations[existingConvIndex],
+          ...conv,
           lastMessage: message.text,
           lastMessageTime: message.timestamp,
-          unreadCount: newConversations[existingConvIndex].unreadCount + 1,
+          unreadCount: prevUnreadForReceiver + 1,
+          unreadForUserId: message.receiverId,
         };
       } else {
         newConversations.push({
@@ -46,6 +50,7 @@ export const useMessagesStore = create<MessagesState>((set, get) => ({
           lastMessage: message.text,
           lastMessageTime: message.timestamp,
           unreadCount: 1,
+          unreadForUserId: message.receiverId,
           listingId: message.listingId,
         });
       }
@@ -69,7 +74,9 @@ export const useMessagesStore = create<MessagesState>((set, get) => ({
   markAsRead: (conversationId: string, userId: string) => {
     set((state) => {
       const newConversations = state.conversations.map((conv) =>
-        conv.id === conversationId ? { ...conv, unreadCount: 0 } : conv
+        conv.id === conversationId && (conv.unreadForUserId === userId || conv.unreadForUserId === undefined)
+          ? { ...conv, unreadCount: 0, unreadForUserId: undefined }
+          : conv
       );
       
       const newMessages = state.messages.map((msg) => {
@@ -86,7 +93,7 @@ export const useMessagesStore = create<MessagesState>((set, get) => ({
 
   getUnreadCount: (userId: string) => {
     return get().conversations
-      .filter((conv) => conv.participants.includes(userId))
+      .filter((conv) => conv.participants.includes(userId) && conv.unreadForUserId === userId)
       .reduce((sum, conv) => sum + conv.unreadCount, 0);
   },
 }));

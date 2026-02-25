@@ -38,15 +38,15 @@ export default function ChatScreen({ route, navigation }: ChatScreenProps): Reac
   const addMessage = useMessagesStore((state) => state.addMessage);
   const markAsRead = useMessagesStore((state) => state.markAsRead);
 
-  const [messages, setMessages] = useState<Message[]>([]);
+  const messages = useMessagesStore((state) =>
+    state.getMessages(conversationId)
+  );
   const [inputText, setInputText] = useState('');
   const flatListRef = useRef<FlatList>(null);
 
   useEffect(() => {
-    const conversationMessages = getMessages(conversationId);
-    setMessages(conversationMessages);
     markAsRead(conversationId, user?.id || '');
-  }, [conversationId]);
+  }, [conversationId, markAsRead, user?.id]);
 
   const sendMessage = () => {
     if (!inputText.trim() || !user) return;
@@ -66,7 +66,6 @@ export default function ChatScreen({ route, navigation }: ChatScreenProps): Reac
     };
 
     addMessage(newMessage);
-    setMessages((prev) => [...prev, newMessage]);
     setInputText('');
 
     setTimeout(() => {

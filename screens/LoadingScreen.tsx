@@ -164,11 +164,11 @@ export default function LoadingScreen(): React.ReactElement {
             },
           ]}
         >
-          <Image
-            source={require('../assets/palm-link.png')}
+          {/* <Image
+            source={require('../assets/images/palm-link.png')}
             style={styles.logo}
             resizeMode="contain"
-          />
+          /> */}
         </Animated.View>
 
         <View style={styles.loaderContainer}>

@@ -5,12 +5,12 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Image,
   Platform,
   Share,
   FlatList,
   Dimensions,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -48,7 +48,7 @@ export default function ListingDetailsScreen({ route, navigation }: ListingDetai
   const addFavorite = useFavoritesStore((state) => state.addFavorite);
   const removeFavorite = useFavoritesStore((state) => state.removeFavorite);
   const isFavorite = useFavoritesStore((state) => state.isFavorite);
-  const [isListingFavorite, setIsListingFavorite] = useState(isFavorite(listing.id));
+  const isListingFavorite = isFavorite(listing.id);
 
   const getAllImages = (): (string | number)[] => {
     if (listing.images && listing.images.length > 0) {
@@ -62,12 +62,12 @@ export default function ListingDetailsScreen({ route, navigation }: ListingDetai
 
   const images = getAllImages();
 
-  // Default images from local assets when listing has no images
+  // Default images when listing has no images
   const defaultImages = [
-    require('../assets/images/oil1.jpg'),
-    require('../assets/images/palm2.jpg'),
-    require('../assets/images/palm3.jpg'),
-    require('../assets/images/palm4.jpg'),
+    require('../assets/images/oil1.png'),
+    require('../assets/images/palm2.png'),
+    require('../assets/images/palm3.png'),
+    require('../assets/images/palm4.png'),
   ];
 
   const displayImages = images.length > 0 ? images : defaultImages;
@@ -76,6 +76,7 @@ export default function ListingDetailsScreen({ route, navigation }: ListingDetai
     if (isBuyer) {
       (navigation as unknown as NativeStackNavigationProp<BuyerStackParamList, 'SellerContact'>).navigate('SellerContact', {
         sellerName: listing.seller,
+        sellerId: listing.sellerId,
       });
     }
   };
@@ -110,11 +111,9 @@ export default function ListingDetailsScreen({ route, navigation }: ListingDetai
   const handleToggleFavorite = (): void => {
     if (isListingFavorite) {
       removeFavorite(listing.id);
-      setIsListingFavorite(false);
       showAlert(alertHelpers.info('Removed', 'Listing removed from favorites'));
     } else {
       addFavorite(listing);
-      setIsListingFavorite(true);
       showAlert(alertHelpers.success('Added', 'Listing added to favorites'));
     }
   };
@@ -178,18 +177,13 @@ export default function ListingDetailsScreen({ route, navigation }: ListingDetai
                   const index = Math.round(event.nativeEvent.contentOffset.x / screenWidth);
                   setCurrentImageIndex(index);
                 }}
-                renderItem={({ item }) => {
-                  const imageSource = typeof item === 'number' 
-                    ? item 
-                    : { uri: String(item) };
-                  return (
-                    <Image
-                      source={imageSource}
-                      style={styles.productImage}
-                      resizeMode="cover"
-                    />
-                  );
-                }}
+                renderItem={({ item }) => (
+                  <Image
+                    source={typeof item === 'number' ? item : item}
+                    style={styles.productImage}
+                    contentFit="cover"
+                  />
+                )}
               />
               {displayImages.length > 1 && (
                 <View style={styles.imageIndicators}>
@@ -756,6 +750,7 @@ const styles = StyleSheet.create({
   },
   actionBar: {
     flexDirection: 'row',
+    alignItems: 'stretch',
     backgroundColor: '#fff',
     paddingHorizontal: 20,
     paddingTop: 20,
@@ -767,8 +762,12 @@ const styles = StyleSheet.create({
   },
   primaryButton: {
     flex: 1,
+    alignSelf: 'stretch',
+    minHeight: 48,
   },
   secondaryButton: {
-    flex: 0,
+    flex: 1,
+    alignSelf: 'stretch',
+    minHeight: 48,
   },
 });
