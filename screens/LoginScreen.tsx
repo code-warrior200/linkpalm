@@ -56,11 +56,11 @@ export default function LoginScreen({ navigation }: LoginScreenProps): React.Rea
       >
         <View style={styles.content}>
           <View style={styles.logoContainer}>
-            {/* <Image 
-              source={require('../assets/images/palm-link.png')} 
-              style={styles.logo} 
+            <Image
+              source={require('../assets/palm.png')}
+              style={styles.logo}
               resizeMode="contain"
-            /> */}
+            />
           </View>
           <Text style={styles.subtitle}>Welcome back</Text>
           <Text style={styles.description}>Sign in to buy and sell palm oil</Text>
