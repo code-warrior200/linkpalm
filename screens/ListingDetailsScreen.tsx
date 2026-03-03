@@ -65,9 +65,8 @@ export default function ListingDetailsScreen({ route, navigation }: ListingDetai
   // Default images when listing has no images
   const defaultImages = [
     require('../assets/images/oil1.png'),
-    require('../assets/images/palm2.png'),
+    require('../assets/images/oil1.png'),
     require('../assets/images/palm3.png'),
-    require('../assets/images/palm4.png'),
   ];
 
   const displayImages = images.length > 0 ? images : defaultImages;

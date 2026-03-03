@@ -37,9 +37,9 @@ const MARKET_PRICES: Array<{ quantity: string; price: number }> = [
 // Product images (WildSparks, Red Gold Xomi, Praise African)
 const PALM_OIL_IMAGES = [
   require('../assets/images/oil1.png'),   // WildSparks 25L
-  require('../assets/images/palm2.png'),  // Red Gold Xomi
+  require('../assets/images/oil1.png'),   // Red Gold Xomi
   require('../assets/images/palm3.png'),  // WildSparks various
-  require('../assets/images/palm4.png'),  // Praise African
+  require('../assets/images/oil1.png'),   // Praise African
 ];
 
 const MOCK_LISTINGS: Listing[] = [

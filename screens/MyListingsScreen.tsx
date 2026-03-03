@@ -35,7 +35,7 @@ const MOCK_MY_LISTINGS: Listing[] = [
     images: [
       require('../assets/images/palm3.png'),
       require('../assets/images/oil1.png'),
-      require('../assets/images/palm4.png'),
+      require('../assets/images/oil1.png'),
     ],
   },
 ];
