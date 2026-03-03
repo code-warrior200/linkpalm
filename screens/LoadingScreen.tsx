@@ -165,7 +165,7 @@ export default function LoadingScreen(): React.ReactElement {
           ]}
         >
           {/* <Image
-            source={require('../assets/images/palm-link.png')}
+            source={require('../assets/icon.png')}
             style={styles.logo}
             resizeMode="contain"
           /> */}

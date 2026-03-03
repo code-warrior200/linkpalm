@@ -5,11 +5,11 @@
     "owner": "codewarriorstech",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/palm-link.png",
+    "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/palm-link.png",
+      "image": "./assets/splash-icon.png",
       "resizeMode": "contain"
     },
     "ios": {
@@ -23,9 +23,8 @@
     "android": {
       "package": "com.linkpalm.app",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/palm-link.png"
+        "foregroundImage": "./assets/adaptive-icon.png"
       },
-      "edgeToEdgeEnabled": true,
       "permissions": [
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION",
@@ -35,7 +34,7 @@
       ]
     },
     "web": {
-      "favicon": "./assets/palm-link.png"
+      "favicon": "./assets/favicon.png"
     },
     "plugins": [
       "expo-font"
