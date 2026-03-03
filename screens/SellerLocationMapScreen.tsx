@@ -14,6 +14,7 @@ import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import { BuyerStackParamList, OrdersStackParamList } from '../types';
+import { getLocationCoordinates } from '../utils/locationCoordinates';
 
 type SellerLocationMapScreenNavigationProp =
   | NativeStackNavigationProp<BuyerStackParamList, 'SellerLocationMap'>
@@ -22,55 +23,10 @@ type SellerLocationMapScreenRouteProp =
   | RouteProp<BuyerStackParamList, 'SellerLocationMap'>
   | RouteProp<OrdersStackParamList, 'SellerLocationMap'>;
 
-interface LocationCoordinates {
-  latitude: number;
-  longitude: number;
-  address: string;
-}
-
 interface SellerLocationMapScreenProps {
   navigation: SellerLocationMapScreenNavigationProp;
   route: SellerLocationMapScreenRouteProp;
 }
-
-// Mock coordinates for seller locations (in real app, these would come from geocoding API)
-const getLocationCoordinates = (sellerName: string, address: string): LocationCoordinates => {
-  const locationMap: Record<string, LocationCoordinates> = {
-    'Golden Farms Ltd': {
-      latitude: 6.5244,
-      longitude: 3.3792,
-      address: '123 Palm Oil Street, Ikeja, Lagos, Nigeria',
-    },
-    'Mama Grace': {
-      latitude: 6.3350,
-      longitude: 5.6037,
-      address: '45 Market Road, Benin City, Edo State, Nigeria',
-    },
-    'Green Valley Farms': {
-      latitude: 7.3775,
-      longitude: 3.9470,
-      address: '78 Farm Estate, Ibadan, Oyo State, Nigeria',
-    },
-    'Niger Delta Oils': {
-      latitude: 4.8156,
-      longitude: 7.0498,
-      address: '12 Industrial Layout, Port Harcourt, Rivers State, Nigeria',
-    },
-    'Premium Oils Co': {
-      latitude: 9.0765,
-      longitude: 7.3986,
-      address: '56 Business District, Abuja, FCT, Nigeria',
-    },
-  };
-
-  return (
-    locationMap[sellerName] || {
-      latitude: 6.5244,
-      longitude: 3.3792,
-      address: address || 'Location not available',
-    }
-  );
-};
 
 export default function SellerLocationMapScreen({ route, navigation }: SellerLocationMapScreenProps): React.ReactElement {
   const { sellerName, address } = route.params;

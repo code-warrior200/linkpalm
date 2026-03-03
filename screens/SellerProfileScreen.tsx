@@ -10,13 +10,14 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import * as ImagePicker from 'expo-image-picker';
 import { useAuthStore } from '../stores/authStore';
 import { useNavigation } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { SellerTabParamList } from '../types';
 import { useAlert, alertHelpers } from '../contexts/AlertContext';
 import Button from '../components/Button';
+import { getInitials } from '../utils/strings';
+import { createImagePickerHandlers } from '../hooks/useImagePicker';
 
 type SellerProfileScreenNavigationProp = BottomTabNavigationProp<SellerTabParamList, 'SellerProfile'>;
 
@@ -35,6 +36,11 @@ export default function SellerProfileScreen(): React.ReactElement {
   const navigation = useNavigation<SellerProfileScreenNavigationProp>();
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const { showAlert } = useAlert();
+  const { pickImage } = createImagePickerHandlers(showAlert, alertHelpers, setProfileImage, {
+    title: 'Select Profile Picture',
+    permissionMessage: 'Sorry, we need camera roll permissions to upload your profile picture!',
+    cameraPermissionMessage: 'Sorry, we need camera permissions to take photos!',
+  });
 
   const handleLogout = (): void => {
     showAlert({
@@ -48,94 +54,12 @@ export default function SellerProfileScreen(): React.ReactElement {
     });
   };
 
-  const getInitials = (name: string): string => {
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-  };
-
   const handleBackPress = (): void => {
     navigation.navigate('MyListings');
   };
 
-  const requestImagePickerPermissions = async (): Promise<boolean> => {
-    if (Platform.OS !== 'web') {
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (status !== 'granted') {
-        showAlert(alertHelpers.warning(
-          'Permission Required',
-          'Sorry, we need camera roll permissions to upload your profile picture!'
-        ));
-        return false;
-      }
-    }
-    return true;
-  };
-
-  const requestCameraPermissions = async (): Promise<boolean> => {
-    if (Platform.OS !== 'web') {
-      const { status } = await ImagePicker.requestCameraPermissionsAsync();
-      if (status !== 'granted') {
-        showAlert(alertHelpers.warning(
-          'Permission Required',
-          'Sorry, we need camera permissions to take photos!'
-        ));
-        return false;
-      }
-    }
-    return true;
-  };
-
-  const handleImagePicker = async (): Promise<void> => {
-    showAlert({
-      type: 'info',
-      title: 'Select Profile Picture',
-      message: 'Choose an option',
-      buttons: [
-        {
-          text: 'Camera',
-          onPress: async () => {
-            const hasPermission = await requestCameraPermissions();
-            if (!hasPermission) return;
-
-            const result = await ImagePicker.launchCameraAsync({
-              // @ts-ignore - Using new mediaType API (replaces deprecated mediaTypes)
-              mediaType: ImagePicker.MediaTypeOptions.Images,
-              allowsEditing: true,
-              aspect: [1, 1],
-              quality: 0.8,
-            });
-
-            if (!result.canceled && result.assets[0]) {
-              setProfileImage(result.assets[0].uri);
-            }
-          },
-        },
-        {
-          text: 'Photo Library',
-          onPress: async () => {
-            const hasPermission = await requestImagePickerPermissions();
-            if (!hasPermission) return;
-
-            const result = await ImagePicker.launchImageLibraryAsync({
-              // @ts-ignore - Using new mediaType API (replaces deprecated mediaTypes)
-              mediaType: ImagePicker.MediaTypeOptions.Images,
-              allowsEditing: true,
-              aspect: [1, 1],
-              quality: 0.8,
-            });
-
-            if (!result.canceled && result.assets[0]) {
-              setProfileImage(result.assets[0].uri);
-            }
-          },
-        },
-        { text: 'Cancel', style: 'cancel' },
-      ],
-    });
+  const handleImagePicker = (): void => {
+    pickImage();
   };
 
   const handleRemoveImage = (): void => {

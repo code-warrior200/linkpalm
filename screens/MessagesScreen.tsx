@@ -11,6 +11,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { BuyerStackParamList, SellerStackParamList, Conversation } from '../types';
+import { getInitials } from '../utils/strings';
 import { useMessagesStore } from '../stores/messagesStore';
 import { useAuthStore } from '../stores/authStore';
 
@@ -31,15 +32,6 @@ export default function MessagesScreen({ navigation }: MessagesScreenProps): Rea
     conv.participants.includes(user?.id || '')
   );
 
-  const getInitials = (name: string): string => {
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-  };
-
   const getOtherParticipantName = (conversation: Conversation): string => {
     const otherParticipantId = conversation.participants.find((id) => id !== user?.id);
     return conversation.participantNames[otherParticipantId || ''] || 'Unknown';
@@ -53,10 +45,10 @@ export default function MessagesScreen({ navigation }: MessagesScreenProps): Rea
       <TouchableOpacity
         style={styles.conversationCard}
         onPress={() =>
-          navigation.navigate('Chat' as never, {
+          (navigation.navigate as (screen: 'Chat', params: { conversationId: string; receiverName: string }) => void)('Chat', {
             conversationId: item.id,
             receiverName: otherParticipantName,
-          } as never)
+          })
         }
         activeOpacity={0.7}
       >

@@ -13,6 +13,8 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import { Order, OrdersStackParamList } from '../types';
 import Button from '../components/Button';
+import { getStatusConfig } from '../utils/orderStatus';
+import { formatDate } from '../utils/date';
 
 type OrderDetailsScreenNavigationProp = NativeStackNavigationProp<OrdersStackParamList, 'OrderDetails'>;
 type OrderDetailsScreenRouteProp = RouteProp<OrdersStackParamList, 'OrderDetails'>;
@@ -25,69 +27,7 @@ interface OrderDetailsScreenProps {
 export default function OrderDetailsScreen({ route, navigation }: OrderDetailsScreenProps): React.ReactElement {
   const { order } = route.params;
   const insets = useSafeAreaInsets();
-
-  const getStatusConfig = (status: Order['status']) => {
-    switch (status) {
-      case 'in-transit':
-        return {
-          color: '#9c27b0',
-          bgColor: '#f3e5f5',
-          icon: 'car' as keyof typeof Ionicons.glyphMap,
-          label: 'In Transit',
-          description: 'Your order is on the way',
-        };
-      case 'pending':
-        return {
-          color: '#ff9800',
-          bgColor: '#fff3e0',
-          icon: 'time' as keyof typeof Ionicons.glyphMap,
-          label: 'Pending',
-          description: 'Your order is being processed',
-        };
-      case 'confirmed':
-        return {
-          color: '#2196f3',
-          bgColor: '#e3f2fd',
-          icon: 'checkmark-circle' as keyof typeof Ionicons.glyphMap,
-          label: 'Confirmed',
-          description: 'Your order has been confirmed by the seller',
-        };
-      case 'delivered':
-        return {
-          color: '#4caf50',
-          bgColor: '#e8f5e9',
-          icon: 'checkmark-done' as keyof typeof Ionicons.glyphMap,
-          label: 'Delivered',
-          description: 'Your order has been delivered',
-        };
-      case 'cancelled':
-        return {
-          color: '#f44336',
-          bgColor: '#ffebee',
-          icon: 'close-circle' as keyof typeof Ionicons.glyphMap,
-          label: 'Cancelled',
-          description: 'This order has been cancelled',
-        };
-      default:
-        return {
-          color: '#666',
-          bgColor: '#f5f5f5',
-          icon: 'ellipse' as keyof typeof Ionicons.glyphMap,
-          label: status,
-          description: '',
-        };
-    }
-  };
-
-  const formatDate = (dateString: string): string => {
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return dateString;
-    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    return `${days[date.getDay()]}, ${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
-  };
-
-  const statusConfig = getStatusConfig(order.status);
+  const statusConfig = getStatusConfig(order.status, true);
 
   return (
     <View style={styles.container}>
@@ -121,7 +61,7 @@ export default function OrderDetailsScreen({ route, navigation }: OrderDetailsSc
               <Ionicons name="calendar-outline" size={20} color="#e27a14" />
               <View style={styles.infoContent}>
                 <Text style={styles.infoLabel}>Order Date</Text>
-                <Text style={styles.infoValue}>{formatDate(order.date)}</Text>
+                <Text style={styles.infoValue}>{formatDate(order.date, 'long')}</Text>
               </View>
             </View>
           </View>

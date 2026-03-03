@@ -13,13 +13,13 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import * as ImagePicker from 'expo-image-picker';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { SellerStackParamList, Listing } from '../types';
 import { useListingsStore } from '../stores/listingsStore';
 import { useAuthStore } from '../stores/authStore';
 import { useAlert, alertHelpers } from '../contexts/AlertContext';
 import Button from '../components/Button';
+import { createImagePickerHandlers } from '../hooks/useImagePicker';
 
 type CreateListingScreenNavigationProp = NativeStackNavigationProp<SellerStackParamList, 'CreateListing'>;
 
@@ -54,82 +54,15 @@ export default function CreateListingScreen({
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const [showUnitPicker, setShowUnitPicker] = useState<boolean>(false);
+  const { pickImage } = createImagePickerHandlers(showAlert, alertHelpers, setProductImage, {
+    aspect: [4, 3],
+    title: 'Select Product Image',
+    permissionMessage: 'Sorry, we need camera roll permissions to upload product images!',
+    cameraPermissionMessage: 'Sorry, we need camera permissions to take photos!',
+  });
 
-  const requestImagePickerPermissions = async (): Promise<boolean> => {
-    if (Platform.OS !== 'web') {
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (status !== 'granted') {
-        showAlert(alertHelpers.warning(
-          'Permission Required',
-          'Sorry, we need camera roll permissions to upload product images!'
-        ));
-        return false;
-      }
-    }
-    return true;
-  };
-
-  const requestCameraPermissions = async (): Promise<boolean> => {
-    if (Platform.OS !== 'web') {
-      const { status } = await ImagePicker.requestCameraPermissionsAsync();
-      if (status !== 'granted') {
-        showAlert(alertHelpers.warning(
-          'Permission Required',
-          'Sorry, we need camera permissions to take photos!'
-        ));
-        return false;
-      }
-    }
-    return true;
-  };
-
-  const handleImagePicker = async (): Promise<void> => {
-    showAlert({
-      type: 'info',
-      title: 'Select Product Image',
-      message: 'Choose an option',
-      buttons: [
-        {
-          text: 'Camera',
-          onPress: async () => {
-            const hasPermission = await requestCameraPermissions();
-            if (!hasPermission) return;
-
-            const result = await ImagePicker.launchCameraAsync({
-              // @ts-ignore - Using new mediaType API (replaces deprecated mediaTypes)
-              mediaType: ImagePicker.MediaTypeOptions.Images,
-              allowsEditing: true,
-              aspect: [4, 3],
-              quality: 0.8,
-            });
-
-            if (!result.canceled && result.assets[0]) {
-              setProductImage(result.assets[0].uri);
-            }
-          },
-        },
-        {
-          text: 'Photo Library',
-          onPress: async () => {
-            const hasPermission = await requestImagePickerPermissions();
-            if (!hasPermission) return;
-
-            const result = await ImagePicker.launchImageLibraryAsync({
-              // @ts-ignore - Using new mediaType API (replaces deprecated mediaTypes)
-              mediaType: ImagePicker.MediaTypeOptions.Images,
-              allowsEditing: true,
-              aspect: [4, 3],
-              quality: 0.8,
-            });
-
-            if (!result.canceled && result.assets[0]) {
-              setProductImage(result.assets[0].uri);
-            }
-          },
-        },
-        { text: 'Cancel', style: 'cancel' },
-      ],
-    });
+  const handleImagePicker = (): void => {
+    pickImage();
   };
 
   const handleRemoveImage = (): void => {

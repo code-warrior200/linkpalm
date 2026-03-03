@@ -8,15 +8,20 @@
       "developmentClient": true,
       "distribution": "internal"
     },
+    "pr": {
+      "extends": "preview"
+    },
     "preview": {
       "distribution": "internal",
       "android": {
-        "buildType": "apk"
+        "buildType": "apk",
+        "resourceClass": "medium"
       }
     },
     "production": {
       "android": {
-        "buildType": "apk"
+        "buildType": "apk",
+        "resourceClass": "medium"
       }
     }
   },

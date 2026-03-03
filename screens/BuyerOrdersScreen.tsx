@@ -15,6 +15,8 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { OrdersStackParamList, Order } from '../types';
 import { useAlert, alertHelpers } from '../contexts/AlertContext';
 import Button from '../components/Button';
+import { getStatusConfig } from '../utils/orderStatus';
+import { formatDate } from '../utils/date';
 
 type BuyerOrdersScreenNavigationProp = NativeStackNavigationProp<OrdersStackParamList, 'OrdersHome'>;
 
@@ -124,59 +126,6 @@ export default function BuyerOrdersScreen({ navigation }: BuyerOrdersScreenProps
     if (selectedFilter === 'all') return true;
     return order.status === selectedFilter;
   });
-
-  const getStatusConfig = (status: Order['status']) => {
-    switch (status) {
-      case 'pending':
-        return {
-          color: '#ff9800',
-          bgColor: '#fff3e0',
-          icon: 'time' as keyof typeof Ionicons.glyphMap,
-          label: 'Pending',
-        };
-      case 'confirmed':
-        return {
-          color: '#2196f3',
-          bgColor: '#e3f2fd',
-          icon: 'checkmark-circle' as keyof typeof Ionicons.glyphMap,
-          label: 'Confirmed',
-        };
-      case 'in-transit':
-        return {
-          color: '#9c27b0',
-          bgColor: '#f3e5f5',
-          icon: 'car' as keyof typeof Ionicons.glyphMap,
-          label: 'In Transit',
-        };
-      case 'delivered':
-        return {
-          color: '#4caf50',
-          bgColor: '#e8f5e9',
-          icon: 'checkmark-done' as keyof typeof Ionicons.glyphMap,
-          label: 'Delivered',
-        };
-      case 'cancelled':
-        return {
-          color: '#f44336',
-          bgColor: '#ffebee',
-          icon: 'close-circle' as keyof typeof Ionicons.glyphMap,
-          label: 'Cancelled',
-        };
-      default:
-        return {
-          color: '#666',
-          bgColor: '#f5f5f5',
-          icon: 'ellipse' as keyof typeof Ionicons.glyphMap,
-          label: status,
-        };
-    }
-  };
-
-  const formatDate = (dateString: string): string => {
-    const date = new Date(dateString);
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
-  };
 
   const handleCancelOrder = (orderId: string, orderNumber: string): void => {
     showAlert({

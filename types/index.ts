@@ -101,6 +101,7 @@ export type OrdersStackParamList = {
   SellerContact: { sellerName: string; sellerId: string };
   SellerLocationMap: { sellerName: string; address: string };
   TrackOrder: { order: Order };
+  ReviewListing: { listing: Listing; orderId: string };
 };
 
 export type SellerStackParamList = {

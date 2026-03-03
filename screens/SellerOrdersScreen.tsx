@@ -11,8 +11,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { SellerStackParamList, Order } from '../types';
-import { useOrdersStore } from '../stores/ordersStore';
 import { useAuthStore } from '../stores/authStore';
+import { getStatusColor, getStatusIcon } from '../utils/orderStatus';
+import { formatDate } from '../utils/date';
 
 type SellerOrdersScreenNavigationProp = NativeStackNavigationProp<SellerStackParamList, 'SellerOrders'>;
 
@@ -72,40 +73,6 @@ export default function SellerOrdersScreen({ navigation }: SellerOrdersScreenPro
     return order.status === filter;
   });
 
-  const getStatusColor = (status: Order['status']) => {
-    switch (status) {
-      case 'pending':
-        return '#ff9800';
-      case 'confirmed':
-        return '#2196f3';
-      case 'in-transit':
-        return '#9c27b0';
-      case 'delivered':
-        return '#4caf50';
-      case 'cancelled':
-        return '#f44336';
-      default:
-        return '#666';
-    }
-  };
-
-  const getStatusIcon = (status: Order['status']) => {
-    switch (status) {
-      case 'pending':
-        return 'time-outline';
-      case 'confirmed':
-        return 'checkmark-circle-outline';
-      case 'in-transit':
-        return 'car-outline';
-      case 'delivered':
-        return 'checkmark-done-circle-outline';
-      case 'cancelled':
-        return 'close-circle-outline';
-      default:
-        return 'help-circle-outline';
-    }
-  };
-
   const renderFilterButton = (
     filterValue: typeof filter,
     label: string,
@@ -137,7 +104,7 @@ export default function SellerOrdersScreen({ navigation }: SellerOrdersScreenPro
         <View style={styles.orderNumberContainer}>
           <Text style={styles.orderNumber}>{item.orderNumber}</Text>
           <Text style={styles.orderDate}>
-            {new Date(item.date).toLocaleDateString()}
+            {formatDate(item.date)}
           </Text>
         </View>
         <View style={[styles.statusBadge, { backgroundColor: `${getStatusColor(item.status)}20` }]}>
@@ -249,7 +216,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginRight: 8,
     marginBottom: 8,
-    display: 'inline-flex',
+    display: 'flex',
   },
   filterButtonActive: {
     backgroundColor: '#fff5eb',

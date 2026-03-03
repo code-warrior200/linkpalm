@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import Alert, { AlertType, AlertButton } from '../components/Alert';
 
-interface AlertOptions {
+export interface AlertOptions {
   type?: AlertType;
   title: string;
   message: string;
